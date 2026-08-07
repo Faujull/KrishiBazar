@@ -1,0 +1,6 @@
+{
+  "name": "KrishiBazar",
+  "description": "AI-Powered Smart Agriculture Platform for Farmers with Disease Detection and Crop Calendar",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
