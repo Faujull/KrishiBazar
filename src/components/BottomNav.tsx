@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { LayoutDashboard, Tractor, ScanLine, CalendarDays, Store } from 'lucide-react';
+import { LayoutDashboard, Tractor, ScanLine, Store, User } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
   const { t } = useLanguage();
@@ -24,19 +24,19 @@ export const BottomNav: React.FC = () => {
       isPrimary: true, // Special AI scan center button
     },
     {
-      to: '/crop-calendar',
-      labelKey: 'navCropCalendar',
-      icon: CalendarDays,
-    },
-    {
       to: '/marketplace',
       labelKey: 'navMarketplace',
       icon: Store,
     },
+    {
+      to: '/profile',
+      labelKey: 'navProfile',
+      icon: User,
+    },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg">
+    <nav className="sticky bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg">
       <div className="max-w-md mx-auto px-2 py-1.5 flex items-center justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;

@@ -9,9 +9,26 @@ interface Message {
   time: string;
 }
 
-export const AIAssistantModal: React.FC = () => {
+interface AIAssistantModalProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
+  isOpen: externalIsOpen,
+  onClose: externalOnClose,
+}) => {
   const { language, t } = useLanguage();
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = (val: boolean) => {
+    if (externalOnClose && !val) {
+      externalOnClose();
+    } else {
+      setInternalIsOpen(val);
+    }
+  };
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'm1',
@@ -101,25 +118,27 @@ export const AIAssistantModal: React.FC = () => {
 
   return (
     <>
-      {/* Floating Action Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-20 right-4 z-40 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white p-3.5 rounded-full shadow-2xl flex items-center gap-2 hover:scale-105 active:scale-95 transition-all ring-4 ring-green-200"
-        title={t('aiAssistant')}
-      >
-        <div className="relative">
-          <Bot className="w-6 h-6 text-white" />
-          <Sparkles className="w-3 h-3 text-[#F9A825] absolute -top-1 -right-1 animate-pulse" />
-        </div>
-        <span className="text-xs font-bold hidden sm:inline pr-1">
-          {t('aiAssistant')}
-        </span>
-      </button>
+      {/* Floating Action Button - rendered only if standalone */}
+      {externalIsOpen === undefined && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="sticky bottom-16 float-right mr-4 z-40 bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] text-white p-3 rounded-full shadow-2xl flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all ring-4 ring-green-200 cursor-pointer select-none"
+          title={t('aiAssistant')}
+        >
+          <div className="relative">
+            <Bot className="w-5 h-5 text-white" />
+            <Sparkles className="w-2.5 h-2.5 text-[#F9A825] absolute -top-1 -right-1 animate-pulse" />
+          </div>
+          <span className="text-xs font-extrabold pr-1">
+            {t('aiAssistant')}
+          </span>
+        </button>
+      )}
 
-      {/* Assistant Modal Drawer */}
+      {/* Assistant Modal Drawer Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-center items-end sm:items-center p-0 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-md h-[85vh] sm:h-[600px] rounded-t-3xl sm:rounded-2xl flex flex-col shadow-2xl overflow-hidden border border-gray-100">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex flex-col justify-end p-0 animate-in fade-in duration-200">
+          <div className="bg-white w-full h-[90%] rounded-t-3xl flex flex-col shadow-2xl overflow-hidden border border-gray-100">
             {/* Modal Header */}
             <div className="bg-[#2E7D32] text-white p-4 flex items-center justify-between shadow-md">
               <div className="flex items-center gap-3">

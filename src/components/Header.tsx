@@ -46,13 +46,14 @@ export const Header: React.FC = () => {
           </a>
 
           {/* Notification Icon */}
-          <button 
+          <Link 
+            to="/notifications"
             className="relative w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-95 transition-transform"
-            onClick={() => alert(language === 'bn' ? 'কোনো নতুন বিজ্ঞপ্তি নেই।' : 'No new notifications.')}
+            title="Notifications"
           >
             <Bell className="w-4 h-4" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#F9A825] ring-2 ring-[#2E7D32]"></span>
-          </button>
+          </Link>
         </div>
       </div>
     </header>

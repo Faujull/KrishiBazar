@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
-import { AIAssistantModal } from './components/AIAssistantModal';
+import { FloatingAIAssistant } from './components/FloatingAIAssistant';
+import { MobileDeviceFrame } from './components/MobileDeviceFrame';
 
 import { AuthPage } from './pages/AuthPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -17,19 +18,25 @@ import { CropCalendarPage } from './pages/CropCalendarPage';
 import { MarketPricesPage } from './pages/MarketPricesPage';
 import { MarketplacePage } from './pages/MarketplacePage';
 import { ProfilePage } from './pages/ProfilePage';
+import { EditProfilePage } from './pages/EditProfilePage';
+import { VerificationPage } from './pages/VerificationPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { HelpSupportPage } from './pages/HelpSupportPage';
+import { NotificationsPage } from './pages/NotificationsPage';
+import { OrdersPage } from './pages/OrdersPage';
 
 const AppContent: React.FC = () => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/auth';
 
   return (
-    <div className="min-h-screen bg-[#F8FAF8] flex flex-col font-sans text-gray-900 antialiased selection:bg-green-200 selection:text-green-900">
+    <div className="min-h-full flex flex-col font-sans text-gray-900 antialiased selection:bg-green-200 selection:text-green-900">
       {/* Show Top Header unless on Auth page */}
       {!isAuthPage && <Header />}
 
-      <main className="flex-1">
+      <main className="flex-1 pb-16">
         <Routes>
-          <Route path="/" element={<DashboardPage />} />
+          <Route path="/" element={<AuthPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/my-farm" element={<MyFarmPage />} />
@@ -42,13 +49,19 @@ const AppContent: React.FC = () => {
           <Route path="/market-prices" element={<MarketPricesPage />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/edit-profile" element={<EditProfilePage />} />
+          <Route path="/verification" element={<VerificationPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/help-support" element={<HelpSupportPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
         </Routes>
       </main>
 
-      {/* Show Floating AI Assistant & Bottom Nav unless on Auth or Preview page */}
+      {/* Show Floating AI Assistant & Bottom Nav unless on Auth page */}
       {!isAuthPage && (
         <>
-          <AIAssistantModal />
+          <FloatingAIAssistant />
           <BottomNav />
         </>
       )}
@@ -60,7 +73,9 @@ export default function App() {
   return (
     <LanguageProvider>
       <BrowserRouter>
-        <AppContent />
+        <MobileDeviceFrame>
+          <AppContent />
+        </MobileDeviceFrame>
       </BrowserRouter>
     </LanguageProvider>
   );
