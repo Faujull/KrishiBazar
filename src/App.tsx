@@ -23,6 +23,8 @@ import { SettingsPage } from './pages/SettingsPage';
 import { HelpSupportPage } from './pages/HelpSupportPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { OrdersPage } from './pages/OrdersPage';
+import { AIFarmIntelligenceCenter } from './pages/AIFarmIntelligenceCenter';
+import { SeasonalPlannerPage } from './pages/SeasonalPlannerPage';
 
 const AppContent: React.FC = () => {
   const location = useLocation();
@@ -40,6 +42,10 @@ const AppContent: React.FC = () => {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/my-farm" element={<MyFarmPage />} />
           <Route path="/add-farm" element={<AddFarmPage />} />
+          <Route path="/ai-intelligence" element={<AIFarmIntelligenceCenter />} />
+          <Route path="/ai-intelligence/:farmId" element={<AIFarmIntelligenceCenter />} />
+          <Route path="/seasonal-planner" element={<SeasonalPlannerPage />} />
+          <Route path="/seasonal-planner/:farmId" element={<SeasonalPlannerPage />} />
           <Route path="/crop-details/:id" element={<CropDetailsPage />} />
           <Route path="/disease-detection" element={<DiseaseDetectionPage />} />
           <Route path="/image-preview" element={<ImagePreviewPage />} />

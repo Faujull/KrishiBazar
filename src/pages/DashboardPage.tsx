@@ -86,6 +86,30 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
+        {/* AI CROP INTELLIGENCE CENTER BANNER */}
+        <Link
+          to="/ai-intelligence/f1"
+          className="bg-gradient-to-r from-[#1B5E20] via-[#2E7D32] to-[#388E3C] text-white p-4 rounded-2xl shadow-md border border-emerald-400/30 flex items-center justify-between hover:shadow-lg transition-all active:scale-98 group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
+              <Sparkles className="w-6 h-6 text-[#F9A825] animate-pulse" />
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold text-emerald-200 uppercase tracking-wider block">
+                {language === 'bn' ? 'ডিজিটাল সিদ্ধান্ত কেন্দ্র' : 'Digital Decision Support'}
+              </span>
+              <h4 className="text-sm font-extrabold text-white leading-snug">
+                {language === 'bn' ? 'এআই ক্রপ ইন্টেলিজেন্স সেন্টার' : 'AI Crop Intelligence Center'}
+              </h4>
+              <p className="text-[10px] text-emerald-100 mt-0.5">
+                {language === 'bn' ? 'রোগ, পোকা, সার, সেচ ও লাভ-ক্ষতির ৮টি এআই অ্যানালাইসিস' : '8 AI Analysis Modules for Disease, Pest, Fertilizer & Yield'}
+              </p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-[#F9A825] group-hover:translate-x-0.5 transition-transform shrink-0" />
+        </Link>
+
         {/* Quick Action Grid */}
         <div className="space-y-2">
           <h3 className="text-sm font-bold text-gray-800 flex items-center justify-between">
