@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
-import { FloatingAIAssistant } from './components/FloatingAIAssistant';
 import { MobileDeviceFrame } from './components/MobileDeviceFrame';
 
 import { AuthPage } from './pages/AuthPage';
@@ -27,7 +26,7 @@ import { OrdersPage } from './pages/OrdersPage';
 
 const AppContent: React.FC = () => {
   const location = useLocation();
-  const isAuthPage = location.pathname === '/auth';
+  const isAuthPage = location.pathname === '/' || location.pathname === '/auth';
 
   return (
     <div className="min-h-full flex flex-col font-sans text-gray-900 antialiased selection:bg-green-200 selection:text-green-900">
@@ -58,13 +57,8 @@ const AppContent: React.FC = () => {
         </Routes>
       </main>
 
-      {/* Show Floating AI Assistant & Bottom Nav unless on Auth page */}
-      {!isAuthPage && (
-        <>
-          <FloatingAIAssistant />
-          <BottomNav />
-        </>
-      )}
+      {/* Show Bottom Nav unless on Auth page */}
+      {!isAuthPage && <BottomNav />}
     </div>
   );
 };
