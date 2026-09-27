@@ -25,6 +25,7 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { AIFarmIntelligenceCenter } from './pages/AIFarmIntelligenceCenter';
 import { SeasonalPlannerPage } from './pages/SeasonalPlannerPage';
+import { FarmMonitoringPage } from './pages/FarmMonitoringPage';
 
 const AppContent: React.FC = () => {
   const location = useLocation();
@@ -44,6 +45,8 @@ const AppContent: React.FC = () => {
           <Route path="/add-farm" element={<AddFarmPage />} />
           <Route path="/ai-intelligence" element={<AIFarmIntelligenceCenter />} />
           <Route path="/ai-intelligence/:farmId" element={<AIFarmIntelligenceCenter />} />
+          <Route path="/farm-monitoring" element={<FarmMonitoringPage />} />
+          <Route path="/farm-monitoring/:farmId" element={<FarmMonitoringPage />} />
           <Route path="/seasonal-planner" element={<SeasonalPlannerPage />} />
           <Route path="/seasonal-planner/:farmId" element={<SeasonalPlannerPage />} />
           <Route path="/crop-details/:id" element={<CropDetailsPage />} />

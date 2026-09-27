@@ -13,12 +13,16 @@ import {
   Info,
   ChevronRight,
   X,
-  Clock
+  Clock,
+  Droplets,
+  CalendarDays,
+  ShieldAlert,
+  TrendingUp
 } from 'lucide-react';
 
 interface NotificationItem {
   id: string;
-  category: 'orders' | 'marketplace' | 'ai' | 'weather' | 'government' | 'system';
+  category: 'weather' | 'irrigation' | 'crop_stage' | 'disease' | 'price' | 'orders';
   titleBn: string;
   titleEn: string;
   descBn: string;
@@ -36,55 +40,65 @@ export const NotificationsPage: React.FC = () => {
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
-      id: 'n1',
+      id: 'n-rain',
       category: 'weather',
-      titleBn: 'বগুড়া অঞ্চলে ভারী বৃষ্টির পূর্বাভাস!',
-      titleEn: 'Heavy rain alert in Bogura region!',
-      descBn: 'আগামী ২৪ ঘণ্টায় বগুড়া ও পার্শ্ববর্তী এলাকায় মাঝারি থেকে ভারী বৃষ্টির সম্ভাবনা। আলুর ক্ষেতে অতিরিক্ত পানি নিষ্কাশনের নালা তৈরি রাখুন।',
-      descEn: 'Moderate to heavy rain expected in next 24h. Maintain drainage channels in potato fields.',
+      titleBn: '🌧️ বৃষ্টি সতর্কতা: বগুড়া অঞ্চলে ভারী বৃষ্টির পূর্বাভাস',
+      titleEn: '🌧️ Rain Alert: Heavy Rain Expected in Bogura',
+      descBn: 'ওপেন-মেটিও লাইভ পূর্বাভাস অনুযায়ী আগামী ২৪ ঘণ্টায় বগুড়া সদর ও শিবগঞ্জ এলাকায় ১৫ মিমি পর্যন্ত বৃষ্টিপাতের সম্ভাবনা। আলুর জমিতে ড্রেনেজ নালা কেটে পানি নিষ্কাশন নিশ্চিত রাখুন।',
+      descEn: 'Open-Meteo forecast indicates up to 15mm precipitation in next 24h. Ensure open furrow drainage to protect root zones.',
       time: '১০ মিনিট আগে',
       read: false,
     },
     {
-      id: 'n2',
-      category: 'ai',
-      titleBn: 'এআই স্ক্যান রিপোর্ট প্রস্তুত',
-      titleEn: 'AI Disease Report Ready',
-      descBn: 'আপনার আমন ধানের পাতার নাবি ধসা রোগের প্রতিকারের জন্য ২ দিনের মধ্যে মেনকোজেব স্প্রে সম্পন্ন করুন।',
-      descEn: 'Spray Mancozeb fungicide within 2 days for Rice Blast detected in your field.',
-      time: '১ ঘণ্টা আগে',
+      id: 'n-irrigation',
+      category: 'irrigation',
+      titleBn: '💧 সেচ সতর্কতা: কুশি গজানো ধাপে AWD সেচ পর্যবেক্ষণ',
+      titleEn: '💧 Irrigation Alert: AWD Monitoring at Tillering Stage',
+      descBn: 'আমন ধানের কুশি গজানো ৩০তম দিনে জমিতে ২-৩ সেমি পাতলা পানি বজায় রাখুন। বৃষ্টির সম্ভাবনা না থাকলে বিকেলে হালকা সেচ দিন।',
+      descEn: 'Maintain 2-3 cm standing water during day 30 of tillering. If no rain occurs, schedule light AWD evening irrigation.',
+      time: '৪৫ মিনিট আগে',
       read: false,
     },
     {
-      id: 'n3',
-      category: 'marketplace',
-      titleBn: 'আপনার তাজা আলুর অর্ডারে নতুন পাইকারি অফার!',
-      titleEn: 'New offer on your Potato listing!',
-      descBn: 'রাজশাহী এগ্রো ট্রেডার্স ৫০০ কেজি আলু ৫৮ টাকা দরে ক্রয়ের প্রস্তাব দিয়েছে।',
-      descEn: 'Rajshahi Agro Traders requested to buy 500kg potatoes at ৳58/kg.',
-      time: '৩ ঘণ্টা আগে',
+      id: 'n-stage',
+      category: 'crop_stage',
+      titleBn: '🌾 ফসল পর্যায় সতর্কতা: কুশি গজানো পর্যায় সমাপ্তির পথে',
+      titleEn: '🌾 Crop-Stage Alert: Transitioning to Booting & Heading',
+      descBn: 'আপনার বিআর-২৮ আমন ধান কুশি গজানো ধাপের শেষ প্রান্তে রয়েছে। আগামী ১০ দিনের মধ্যে ফুল ও শীষ বের হওয়া শুরু হবে। ইউরিয়ার শেষ কিস্তি উপরিপ্রয়োগ করুন।',
+      descEn: 'Your BR-28 Amon paddy is completing the tillering cycle. Heading begins in ~10 days. Apply final top-dressing Urea.',
+      time: '২ ঘণ্টা আগে',
+      read: false,
+    },
+    {
+      id: 'n-disease',
+      category: 'disease',
+      titleBn: '🛡️ রোগ ঝুঁকি সতর্কতা: আর্দ্র আবহাওয়ায় নাবি ধসার উচ্চ ঝুঁকি',
+      titleEn: '🛡️ Disease-Risk Alert: Late Blight Threat from High Humidity',
+      descBn: 'বাতাসের আর্দ্রতা ৮২% অতিক্রম করায় আলুর নাবি ধসা ও ধানের পাতা ব্লাস্ট ছত্রাকের স্পোর ছড়ানোর ঝুঁকি রয়েছে। আজই এআই রোগ স্ক্যান সম্পন্ন করুন।',
+      descEn: 'Relative humidity exceeds 82%, elevating late blight and leaf blast spore growth. Run an AI Leaf Disease Scan today.',
+      time: '৪ ঘণ্টা আগে',
       read: true,
     },
     {
-      id: 'n4',
-      category: 'government',
-      titleBn: 'সরকারি সার ভর্তুকি মেসেজ',
-      titleEn: 'Govt Fertilizer Subsidy Update',
-      descBn: 'আপনার স্মার্ট কৃষক কার্ডে ইউরিয়া ও ডিএপি সারের বিএসআরআই ডিলার কোটা বরাদ্দ করা হয়েছে।',
-      descEn: 'Urea and DAP dealer quota allocated for your Krishok Card.',
+      id: 'n-price',
+      category: 'price',
+      titleBn: '📈 বাজার দর সতর্কতা: মহাস্থান আড়তে আলুর দর বৃদ্ধি',
+      titleEn: '📈 Market-Price Alert: Potato Price Up at Mahasthangarh',
+      descBn: 'আজ মহাস্থান ও শিবগঞ্জ পাইকারি বাজারে লাল আলুর দর কেজি প্রতি ৪ টাকা বেড়ে ৩৮ টাকায় লেনদেন হচ্ছে। মজুত ফসল বিক্রির উত্তম সময়।',
+      descEn: 'Red Potato wholesale price increased by ৳4/kg to ৳38/kg at Mahasthan Arat today. Ideal window to publish produce listing.',
       time: 'গতকাল',
       read: true,
     },
     {
-      id: 'n5',
+      id: 'n-order',
       category: 'orders',
-      titleBn: 'অর্ডার নং #KB-9042 নিশ্চিত করা হয়েছে',
-      titleEn: 'Order #KB-9042 Confirmed',
-      descBn: 'আপনার সার ও বালাইনাশক অর্ডারটি পরিবহনের জন্য নির্ধারিত হয়েছে।',
-      descEn: 'Your organic pesticide order is dispatched for delivery.',
-      time: '২ দিন আগে',
+      titleBn: '📦 নতুন পাইকারি অর্ডার: হাজী কাশেম আড়ত থেকে ৫০০ কেজি আলু',
+      titleEn: '📦 Order Notification: 500kg Potato from Haji Kashem Arat',
+      descBn: 'হাজী কাশেম পাইকারি আড়ত আপনার তাজা কার্ডিনাল লাল আলুর বিজ্ঞাপনে ৳১৬,০০০ মূল্যের ৫০০ কেজি অর্ডার নিশ্চিত করেছে। বিস্তারিত দেখে ডেলিভারি কনফার্ম করুন।',
+      descEn: 'Haji Kashem Wholesale Arat placed an order for 500kg Cardinal Potato worth ৳16,000. View details and dispatch shipment.',
+      time: 'গতকাল',
       read: true,
-    },
+    }
   ]);
 
   const markAllRead = () => {
@@ -106,13 +120,16 @@ export const NotificationsPage: React.FC = () => {
     switch (category) {
       case 'weather':
         return <CloudRain className="w-4 h-4 text-blue-600" />;
-      case 'ai':
-        return <Sparkles className="w-4 h-4 text-[#2E7D32]" />;
-      case 'marketplace':
+      case 'irrigation':
+        return <Droplets className="w-4 h-4 text-cyan-600" />;
+      case 'crop_stage':
+        return <CalendarDays className="w-4 h-4 text-emerald-600" />;
+      case 'disease':
+        return <ShieldAlert className="w-4 h-4 text-amber-600" />;
+      case 'price':
+        return <TrendingUp className="w-4 h-4 text-green-700" />;
       case 'orders':
         return <ShoppingBag className="w-4 h-4 text-[#F9A825]" />;
-      case 'government':
-        return <Building2 className="w-4 h-4 text-emerald-800" />;
       default:
         return <Info className="w-4 h-4 text-gray-600" />;
     }
@@ -151,16 +168,17 @@ export const NotificationsPage: React.FC = () => {
       <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 text-xs font-bold">
         {[
           { id: 'all', labelBn: 'সকল', labelEn: 'All' },
-          { id: 'weather', labelBn: 'আবহাওয়া', labelEn: 'Weather' },
-          { id: 'ai', labelBn: 'এআই এলার্ট', labelEn: 'AI Alerts' },
-          { id: 'marketplace', labelBn: 'মার্কেট', labelEn: 'Market' },
-          { id: 'government', labelBn: 'সরকারি', labelEn: 'Govt' },
-          { id: 'orders', labelBn: 'অর্ডার', labelEn: 'Orders' },
+          { id: 'weather', labelBn: '🌧️ বৃষ্টি', labelEn: 'Rain' },
+          { id: 'irrigation', labelBn: '💧 সেচ', labelEn: 'Irrigation' },
+          { id: 'crop_stage', labelBn: '🌾 ফসল পর্যায়', labelEn: 'Stage' },
+          { id: 'disease', labelBn: '🛡️ রোগ ঝুঁকি', labelEn: 'Disease' },
+          { id: 'price', labelBn: '📈 বাজার দর', labelEn: 'Price' },
+          { id: 'orders', labelBn: '📦 অর্ডার', labelEn: 'Orders' },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setFilter(tab.id)}
-            className={`whitespace-nowrap px-3.5 py-1.5 rounded-full border transition-all ${
+            className={`whitespace-nowrap px-3 py-1.5 rounded-full border transition-all text-[11px] ${
               filter === tab.id
                 ? 'bg-[#2E7D32] text-white border-[#2E7D32] shadow-xs'
                 : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'

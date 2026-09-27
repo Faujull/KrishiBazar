@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { INITIAL_FARMS, INITIAL_CROPS } from '../data/mockData';
-import { Tractor, Plus, MapPin, HeartPulse, ChevronRight, Sprout, Sparkles, CalendarDays } from 'lucide-react';
+import { Tractor, Plus, MapPin, HeartPulse, ChevronRight, Sprout, Sparkles, CalendarDays, Radio } from 'lucide-react';
 
 export const MyFarmPage: React.FC = () => {
   const { language, t } = useLanguage();
@@ -84,22 +84,30 @@ export const MyFarmPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* AI Intelligence Action Bar */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              {/* AI Intelligence & IoT Action Bar */}
+              <div className="grid grid-cols-3 gap-1.5 text-xs">
                 <Link
                   to={`/ai-intelligence/${farm.id}`}
-                  className="bg-[#2E7D32] hover:bg-green-800 text-white font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xs active:scale-95 transition-all"
+                  className="bg-[#2E7D32] hover:bg-green-800 text-white font-bold py-2.5 px-2 rounded-xl flex items-center justify-center gap-1 shadow-xs active:scale-95 transition-all text-[11px]"
                 >
-                  <Sparkles className="w-4 h-4 text-[#F9A825]" />
-                  <span>{isBn ? 'এআই ইন্টেলিজেন্স' : 'AI Intelligence'}</span>
+                  <Sparkles className="w-3.5 h-3.5 text-[#F9A825]" />
+                  <span>{isBn ? 'এআই ইন্টেল' : 'AI Intel'}</span>
+                </Link>
+
+                <Link
+                  to={`/farm-monitoring/${farm.id}`}
+                  className="bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 font-bold py-2.5 px-2 rounded-xl flex items-center justify-center gap-1 active:scale-95 transition-all text-[11px]"
+                >
+                  <Radio className="w-3.5 h-3.5 text-teal-600" />
+                  <span>{isBn ? 'আইওটি সেন্সর' : 'IoT Sensor'}</span>
                 </Link>
 
                 <Link
                   to={`/seasonal-planner/${farm.id}`}
-                  className="bg-emerald-50 hover:bg-emerald-100 text-[#2E7D32] border border-emerald-200 font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                  className="bg-emerald-50 hover:bg-emerald-100 text-[#2E7D32] border border-emerald-200 font-bold py-2.5 px-2 rounded-xl flex items-center justify-center gap-1 active:scale-95 transition-all text-[11px]"
                 >
-                  <CalendarDays className="w-4 h-4" />
-                  <span>{isBn ? 'সিজন প্ল্যানার' : 'Seasonal Planner'}</span>
+                  <CalendarDays className="w-3.5 h-3.5" />
+                  <span>{isBn ? 'প্ল্যানার' : 'Planner'}</span>
                 </Link>
               </div>
 

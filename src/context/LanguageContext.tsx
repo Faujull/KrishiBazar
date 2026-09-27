@@ -82,6 +82,36 @@ const translations: Record<string, Record<Language, string>> = {
   areaInDecimal: { bn: 'জমির পরিমাণ (শতক/ডিসিমাল)', en: 'Land Area (Decimal)' },
   soilType: { bn: 'মাটির ধরণ', en: 'Soil Type' },
   saveFarm: { bn: 'খামার সংরক্ষণ করুন', en: 'Save Farm Details' },
+  farmMonitoring: { bn: 'আইওটি ফার্ম মনিটরিং', en: 'IoT Farm Monitoring' },
+  farmMonitoringSub: { bn: 'রিয়েল-টাইম সেন্সর ডেটা ও সুরক্ষা মনিটরিং', en: 'Real-time sensor telemetry & security' },
+
+  // Farmer Marketplace
+  myListings: { bn: 'আমার বিক্রয় তালিকা', en: 'My Listings' },
+  allProduce: { bn: 'সকল ফসল', en: 'All Produce' },
+  receivedOrders: { bn: 'প্রাপ্ত অর্ডারসমূহ', en: 'Received Orders' },
+  createListingBtn: { bn: 'নতুন ফসল বিক্রি পোস্ট করুন', en: 'Post New Produce Listing' },
+  selectCrop: { bn: 'ফসল নির্বাচন করুন', en: 'Select Crop' },
+  quantityKg: { bn: 'পরিমাণ (কেজি)', en: 'Quantity (kg)' },
+  pricePerKgLabel: { bn: 'দর প্রতি কেজি (টাকা)', en: 'Price per kg (৳)' },
+  harvestDateLabel: { bn: 'ফসল তোলার তারিখ', en: 'Harvest Date' },
+  publishListing: { bn: 'লিস্টিং প্রকাশ করুন', en: 'Publish Listing' },
+  markSold: { bn: 'বিক্রিত মার্ক করুন', en: 'Mark as Sold' },
+  markShipped: { bn: 'পাঠানো হয়েছে', en: 'Mark as Shipped' },
+  markDelivered: { bn: 'সম্পন্ন হয়েছে', en: 'Mark as Delivered' },
+
+  // AI & Farmer Alerts
+  aiIntelligence: { bn: 'এআই ক্রপ ইন্টেলিজেন্স', en: 'AI Crop Intelligence' },
+  aiDailySummary: { bn: 'দৈনিক এআই খামার সামারি', en: 'AI Daily Farm Summary' },
+  cropLifecycle: { bn: 'ফসল জীবনচক্র ট্র্যাকার', en: 'Crop Lifecycle Tracker' },
+  iotSensors: { bn: 'স্মার্ট আইওটি সেন্সর', en: 'Smart IoT Sensors' },
+  rainAlert: { bn: 'বৃষ্টি সতর্কতা', en: 'Rain Alert' },
+  irrigationAlert: { bn: 'সেচ সতর্কতা', en: 'Irrigation Alert' },
+  cropStageAlert: { bn: 'ফসল পর্যায় সতর্কতা', en: 'Crop-Stage Alert' },
+  diseaseRiskAlert: { bn: 'রোগ ঝুঁকি সতর্কতা', en: 'Disease-Risk Alert' },
+  marketPriceAlert: { bn: 'বাজার দর সতর্কতা', en: 'Market-Price Alert' },
+  orderNotification: { bn: 'অর্ডার নোটিফিকেশন', en: 'Order Notification' },
+  topRecommendedCrops: { bn: 'এআই অনুমোদিত সেরা ফসল', en: 'Top Recommended Crops' },
+  compatibilityScore: { bn: 'সামঞ্জস্য স্কোর', en: 'Compatibility Score' },
 
   // Common buttons
   back: { bn: 'ফিরে যান', en: 'Back' },

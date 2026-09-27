@@ -13,6 +13,8 @@ export const INITIAL_FARMS: Farm[] = [
     cropsCount: 3,
     healthScore: 92,
     imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80',
+    latitude: 24.8481,
+    longitude: 89.3730,
   },
   {
     id: 'f2',
@@ -26,6 +28,8 @@ export const INITIAL_FARMS: Farm[] = [
     cropsCount: 2,
     healthScore: 86,
     imageUrl: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb23659?auto=format&fit=crop&w=600&q=80',
+    latitude: 25.7439,
+    longitude: 89.2752,
   },
 ];
 

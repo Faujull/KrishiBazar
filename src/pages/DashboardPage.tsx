@@ -1,24 +1,48 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { INITIAL_CROPS, INITIAL_MARKET_PRICES } from '../data/mockData';
+import { INITIAL_FARMS, INITIAL_CROPS, INITIAL_MARKET_PRICES } from '../data/mockData';
 import {
   ScanLine,
   CalendarDays,
   TrendingUp,
   PlusCircle,
-  CloudSun,
   AlertTriangle,
   ChevronRight,
   ShieldAlert,
   Droplets,
   MapPin,
   Tractor,
-  Sparkles
+  Sparkles,
+  RefreshCw,
+  Radio
 } from 'lucide-react';
+import { useWeather, getWeatherInterpretation, toBengaliNumber } from '../services/weatherService';
+import { WeatherIcon } from '../components/WeatherIcon';
+import { AIDailyRecommendationCard } from '../components/farm/AIDailyRecommendationCard';
 
 export const DashboardPage: React.FC = () => {
   const { language, t } = useLanguage();
+  const isBn = language === 'bn';
+
+  // Use the active primary farm (Sonar Bangla Agro Farm in Shibganj, Bogura)
+  const currentFarm = INITIAL_FARMS[0];
+  const currentCrop = INITIAL_CROPS[0];
+  const { weather, loading, isLive, refetch } = useWeather({ farm: currentFarm });
+  const weatherIconInfo = getWeatherInterpretation(weather?.weatherCode ?? 2);
+  const currentTemp =
+    weather?.temperature != null && !isNaN(weather.temperature)
+      ? Math.round(weather.temperature)
+      : 34;
+  const currentDesc = isBn
+    ? weather?.weatherDescriptionBn || 'আংশিক মেঘলা'
+    : weather?.weatherDescriptionEn || 'Partly Cloudy';
+  const currentHumidity = weather?.humidity != null ? weather.humidity : 78;
+  const currentWind =
+    weather?.windSpeed != null && !isNaN(weather.windSpeed)
+      ? Math.round(weather.windSpeed)
+      : 12;
+  const currentPrecip = weather?.precipitation ?? 0;
 
   return (
     <div className="min-h-screen bg-[#F8FAF8] pb-24">
@@ -42,23 +66,51 @@ export const DashboardPage: React.FC = () => {
 
           {/* Weather Widget Card */}
           <div className="bg-white/15 backdrop-blur-md rounded-2xl p-3.5 border border-white/20 flex items-center justify-between shadow-inner">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-[#F9A825]/20 flex items-center justify-center text-[#F9A825]">
-                <CloudSun className="w-7 h-7" />
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-12 h-12 rounded-xl bg-[#F9A825]/20 flex items-center justify-center text-[#F9A825] shrink-0">
+                <WeatherIcon iconName={weatherIconInfo.iconName} className="w-7 h-7" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-black">৩৪° সে</span>
-                  <span className="text-xs bg-green-800/60 px-2 py-0.5 rounded-full text-green-100">
-                    {language === 'bn' ? 'আংশিক মেঘলা' : 'Partly Cloudy'}
+                  <span className="text-xl font-black">
+                    {isBn
+                      ? `${toBengaliNumber(currentTemp)}° সে`
+                      : `${currentTemp}°C`}
                   </span>
+                  <span className="text-xs bg-green-800/60 px-2 py-0.5 rounded-full text-green-100 font-medium truncate max-w-[120px]">
+                    {currentDesc}
+                  </span>
+                  {isLive && (
+                    <span className="hidden sm:inline-flex items-center gap-1 text-[9px] bg-emerald-500/30 text-emerald-100 font-bold px-1.5 py-0.5 rounded-full border border-emerald-400/40">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                      <span>{isBn ? 'লাইভ' : 'Live'}</span>
+                    </span>
+                  )}
                 </div>
-                <p className="text-xs text-green-100 mt-0.5 flex items-center gap-1">
-                  <Droplets className="w-3 h-3 text-blue-200" />
-                  <span>{t('weatherDesc')}</span>
+                <p className="text-xs text-green-100 mt-0.5 flex items-center gap-1.5 truncate">
+                  <Droplets className="w-3 h-3 text-blue-200 shrink-0" />
+                  <span className="truncate">
+                    {isBn
+                      ? `আর্দ্রতা ${toBengaliNumber(currentHumidity)}% • বাতাস ${toBengaliNumber(currentWind)} কিমি/ঘন্টা${
+                          currentPrecip > 0 ? ` • বৃষ্টি ${toBengaliNumber(currentPrecip)} মিমি` : ''
+                        }`
+                      : `Humidity ${currentHumidity}% • Wind ${currentWind} km/h${
+                          currentPrecip > 0 ? ` • Rain ${currentPrecip}mm` : ''
+                        }`}
+                  </span>
                 </p>
               </div>
             </div>
+
+            <button
+              onClick={() => refetch()}
+              title={isBn ? 'আবহাওয়া রিফ্রেশ করুন' : 'Refresh Weather'}
+              disabled={loading}
+              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all active:scale-95 shrink-0 ml-2"
+              aria-label="Refresh weather data"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
       </div>
@@ -109,6 +161,41 @@ export const DashboardPage: React.FC = () => {
           </div>
           <ChevronRight className="w-5 h-5 text-[#F9A825] group-hover:translate-x-0.5 transition-transform shrink-0" />
         </Link>
+
+        {/* IoT FARM MONITORING BANNER */}
+        <Link
+          to="/farm-monitoring/f1"
+          className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950 text-white p-3.5 rounded-2xl shadow-xs border border-teal-500/30 flex items-center justify-between hover:shadow-md transition-all active:scale-98 group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/10">
+              <Radio className="w-5 h-5 text-emerald-400 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-extrabold text-emerald-300 uppercase tracking-wider block">
+                  {language === 'bn' ? 'স্মার্ট আইওটি গেটওয়ে' : 'Smart IoT Gateway'}
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              </div>
+              <h4 className="text-xs font-black text-white leading-snug">
+                {language === 'bn' ? 'খামার সেন্সর মনিটরিং ও ফিল্ড ডেটা' : 'Farm Sensor Telemetry & Hazards'}
+              </h4>
+              <p className="text-[10px] text-teal-100/90 mt-0.5">
+                {language === 'bn' ? 'মাটির আর্দ্রতা, তাপমাত্রা, এনপিকে, অগ্নি ও সুরক্ষা নিরীক্ষণ' : 'Soil moisture, pH, NPK, fire & intrusion detection'}
+              </p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-emerald-300 group-hover:translate-x-0.5 transition-transform shrink-0" />
+        </Link>
+
+        {/* AI DAILY FARM RECOMMENDATION */}
+        <AIDailyRecommendationCard
+          farm={currentFarm}
+          crop={currentCrop}
+          weather={weather}
+          compact={true}
+        />
 
         {/* Quick Action Grid */}
         <div className="space-y-2">

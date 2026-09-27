@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { INITIAL_FARMS, INITIAL_CROPS } from '../data/mockData';
+import { Farm, Crop } from '../types';
 import {
   Sparkles,
   HeartPulse,
@@ -26,8 +27,11 @@ import {
   Compass,
   Check,
   Zap,
-  Target
+  Target,
+  Radio
 } from 'lucide-react';
+import { useWeather, toBengaliNumber } from '../services/weatherService';
+import { AIDailyRecommendationCard } from '../components/farm/AIDailyRecommendationCard';
 
 export const AIFarmIntelligenceCenter: React.FC = () => {
   const { farmId } = useParams<{ farmId?: string }>();
@@ -35,10 +39,54 @@ export const AIFarmIntelligenceCenter: React.FC = () => {
   const { language } = useLanguage();
   const isBn = language === 'bn';
 
-  // Selected Farm state
+  // Selected Farm state with resilient fallback guarantees
   const selectedFarmId = farmId || 'f1';
-  const farm = INITIAL_FARMS.find((f) => f.id === selectedFarmId) || INITIAL_FARMS[0];
-  const crop = INITIAL_CROPS.find((c) => c.farmId === farm.id) || INITIAL_CROPS[0];
+  const defaultFarm: Farm = INITIAL_FARMS[0] || {
+    id: 'f1',
+    nameBn: 'সোনার বাংলা কৃষি খামার',
+    nameEn: 'Sonar Bangla Agro Farm',
+    district: 'বগুড়া',
+    upazila: 'শিবগঞ্জ',
+    areaDecimal: 120,
+    soilTypeBn: 'দোআঁশ মাটি',
+    soilTypeEn: 'Loamy Soil',
+    cropsCount: 3,
+    healthScore: 92,
+    imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80',
+    latitude: 24.8481,
+    longitude: 89.3730
+  };
+  const farm = INITIAL_FARMS.find((f) => f.id === selectedFarmId) || defaultFarm;
+
+  const defaultCrop: Crop = INITIAL_CROPS[0] || {
+    id: 'c1',
+    farmId: farm.id,
+    cropNameBn: 'উফশী আমন ধান',
+    cropNameEn: 'High Yield Amon Rice',
+    varietyBn: 'বিআর-২৮ (BR-28)',
+    varietyEn: 'BR-28',
+    plantingDate: '২০২৬-০৬-১৫',
+    expectedHarvestDate: '২০২৬-১০-১৫',
+    areaDecimal: 60,
+    stageBn: 'কুশি গজানো পর্যায় (Tillering Stage)',
+    stageEn: 'Tillering Stage',
+    status: 'warning' as const,
+    imageUrl: 'https://images.unsplash.com/photo-1530507629858-e4977d30e9e0?auto=format&fit=crop&w=600&q=80'
+  };
+  const crop = INITIAL_CROPS.find((c) => c.farmId === farm.id) || defaultCrop;
+  const { weather } = useWeather({ farm });
+
+  // Safe weather display calculations
+  const tempVal =
+    weather?.temperature != null && !isNaN(weather.temperature)
+      ? Math.round(weather.temperature)
+      : 34;
+  const weatherDesc = isBn
+    ? weather?.weatherDescriptionBn || 'আংশিক মেঘলা'
+    : weather?.weatherDescriptionEn || 'Partly Cloudy';
+  const weatherDisplayString = isBn
+    ? `${toBengaliNumber(tempVal)}° সে • ${weatherDesc}`
+    : `${tempVal}°C • ${weatherDesc}`;
 
   // Active Tab state: 'disease' | 'pest' | 'fertilizer' | 'irrigation' | 'yield' | 'profit' | 'market' | 'calendar'
   const [activeTab, setActiveTab] = useState<
@@ -64,6 +112,213 @@ export const AIFarmIntelligenceCenter: React.FC = () => {
     { id: 'market', nameBn: 'বাজার বুদ্ধিমত্তা', nameEn: 'Market', icon: TrendingUp },
     { id: 'calendar', nameBn: 'ফসল জীবনচক্র', nameEn: 'Calendar', icon: CalendarDays },
   ] as const;
+
+  type LifecycleStageId = 'seed' | 'germination' | 'seedling' | 'tillering' | 'flowering' | 'maturity' | 'harvest';
+
+  const [selectedLifecycleStage, setSelectedLifecycleStage] = useState<LifecycleStageId>('tillering');
+  const [completedTaskIds, setCompletedTaskIds] = useState<Record<string, boolean>>({
+    'tillering-0': true,
+    'tillering-1': true,
+    'seed-0': true,
+    'seed-1': true,
+    'germination-0': true,
+    'germination-1': true,
+    'seedling-0': true,
+    'seedling-1': true
+  });
+
+  const toggleStageTask = (taskId: string) => {
+    setCompletedTaskIds((prev) => ({
+      ...prev,
+      [taskId]: !prev[taskId]
+    }));
+  };
+
+  const LIFECYCLE_STAGES_DATA: Record<
+    LifecycleStageId,
+    {
+      id: LifecycleStageId;
+      nameBn: string;
+      nameEn: string;
+      stepNumber: number;
+      durationBn: string;
+      durationEn: string;
+      badgeBn: string;
+      badgeEn: string;
+      waterReqBn: string;
+      waterReqEn: string;
+      fertilizerBn: string;
+      fertilizerEn: string;
+      pestRiskBn: string;
+      pestRiskEn: string;
+      nextStageBn: string;
+      nextStageEn: string;
+      checklist: { textBn: string; textEn: string }[];
+    }
+  > = {
+    seed: {
+      id: 'seed',
+      nameBn: '১. বীজ পর্যায় (Seed Stage)',
+      nameEn: '1. Seed Stage',
+      stepNumber: 1,
+      durationBn: '০-৩ দিন • অঙ্কুরোদগমের প্রস্তুতি',
+      durationEn: 'Days 0-3 • Germination prep',
+      badgeBn: 'বীজ শোধন',
+      badgeEn: 'Seed Treatment',
+      waterReqBn: 'বীজতলায় হালকা আর্দ্রতা বজায় রাখুন, কোনোভাবেই জমা পানি নয়।',
+      waterReqEn: 'Keep nursery bed moist; prevent waterlogging completely.',
+      fertilizerBn: 'বীজ শোধনে ট্রাইকোডার্মা ও কার্বেনডাজিম ব্যবহার করুন। জমিতে কোনো রাসায়নিক সার নয়।',
+      fertilizerEn: 'Treat seeds with Trichoderma / Carbendazim. No chemical fertilizer in bed.',
+      pestRiskBn: 'বীজ পচন ছত্রাক ও পাখি বা ইঁদুর কর্তৃক বীজ তুলে ফেলার ঝুঁকি।',
+      pestRiskEn: 'Seed rot fungi, bird scavenging, and rodent predation risk.',
+      nextStageBn: 'অঙ্কুরোদগম পর্যায় (Germination) — আনুমানিক ৪-৫ দিন পর।',
+      nextStageEn: 'Germination Stage — Expected in ~4-5 days.',
+      checklist: [
+        { textBn: 'লবণাক্ত পানিতে ভাসিয়ে পুষ্ট ও নিরোগ বীজ নির্বাচন', textEn: 'Saltwater flotation test to select healthy seeds' },
+        { textBn: 'ছত্রাকনাশক দিয়ে ২৪ ঘণ্টা বীজ শোধন ও জাগ দেওয়া', textEn: 'Fungicide seed treatment and 24h soaking' },
+        { textBn: 'উঁচু ও সমতল বীজতলায় বীজ সমানভাবে ছিটানো', textEn: 'Even seed broadcasting on raised nursery bed' }
+      ]
+    },
+    germination: {
+      id: 'germination',
+      nameBn: '২. অঙ্কুরোদগম পর্যায় (Germination)',
+      nameEn: '2. Germination Stage',
+      stepNumber: 2,
+      durationBn: '৪-৭ দিন • সূক্ষ্ম ভ্রূণমূল ও ভ্রূণমুকুল উদগম',
+      durationEn: 'Days 4-7 • Radicle & plumule emergence',
+      badgeBn: 'অঙ্কুর বিকাশ',
+      badgeEn: 'Emergence',
+      waterReqBn: 'মাটির আর্দ্রতা ৬০% এ বজায় রাখতে সকালে হালকা স্প্রিঙ্কলার বা ঝাঝরি দিয়ে পানি দিন।',
+      waterReqEn: 'Maintain 60% soil moisture with light morning sprinkler watering.',
+      fertilizerBn: 'এখন কোনো রাসায়নিক সার প্রয়োজন নেই; মাটির প্রাকৃতিক পুষ্টিই যথেষ্ট।',
+      fertilizerEn: 'No chemical fertilizer required; seedling relies on endosperm.',
+      pestRiskBn: 'অতিরিক্ত আর্দ্রতায় ড্যাম্পিং অফ ও চারা ঢলে পড়া রোগ।',
+      pestRiskEn: 'Damping-off fungal rot due to stagnant wetness.',
+      nextStageBn: 'চারা বীজতলা পর্যায় (Seedling) — আনুমানিক ৭-১০ দিন পর।',
+      nextStageEn: 'Seedling Stage — Expected in ~7-10 days.',
+      checklist: [
+        { textBn: 'বীজতলায় পাখির উপদ্রব ঠেকাতে উপরে জাল বা নেট স্থাপন', textEn: 'Erect bird netting over seedbed' },
+        { textBn: 'অঙ্কুরোদগমের হার (৮৫%+) পরীক্ষা ও পর্যবেক্ষণ', textEn: 'Verify germination rate (85%+)' },
+        { textBn: 'অতিরিক্ত কুয়াশায় পলিথিন দিয়ে বীজতলা ঢেকে রাখা', textEn: 'Cover seedbed with polythene during heavy winter fog' }
+      ]
+    },
+    seedling: {
+      id: 'seedling',
+      nameBn: '৩. চারা বীজতলা পর্যায় (Seedling Stage)',
+      nameEn: '3. Seedling Nursery Stage',
+      stepNumber: 3,
+      durationBn: '৮-২৫ দিন • মূল ক্ষেতে রোপণের জন্য সবুজ চারা প্রস্তুতকরণ',
+      durationEn: 'Days 8-25 • Preparing vigorous seedlings for transplant',
+      badgeBn: 'সবল চারা',
+      badgeEn: 'Vigorous Shoots',
+      waterReqBn: 'বীজতলায় ১-২ সেমি পাতলা পানি রাখুন যাতে চারা সহজে নরম মাটি থেকে তোলা যায়।',
+      waterReqEn: 'Maintain 1-2 cm shallow water to ease uprooting without root snap.',
+      fertilizerBn: 'চারা হলদে হলে প্রতি শতকে ৭০ গ্রাম ইউরিয়া ও ৮০ গ্রাম জিপসাম উপরিপ্রয়োগ করুন।',
+      fertilizerEn: 'Apply 70g Urea & 80g Gypsum per decimal if seedlings yellow.',
+      pestRiskBn: 'থ্রিপস ও পাতা পোড়া পোকার আক্রমণ।',
+      pestRiskEn: 'Thrips and leaf folder insect attacks.',
+      nextStageBn: 'কুশি গজানো পর্যায় (Tillering) — মূল জমিতে রোপণের পর।',
+      nextStageEn: 'Tillering Stage — Upon transplanting into main field.',
+      checklist: [
+        { textBn: 'সুস্থ সবল গাঢ় সবুজ চারা বাছাই ও রোগাক্রান্ত চারা অপসারণ', textEn: 'Select robust seedlings and cull diseased rejects' },
+        { textBn: 'চারা তোলার আগের দিন বিকেলে বীজতলায় সেচ প্রদান', textEn: 'Irrigate nursery bed the evening prior to uprooting' },
+        { textBn: 'মূল জমিতে সারি থেকে সারি ২০ সেমি এবং চারা থেকে চারা ১৫ সেমি দূরত্বে রোপণ', textEn: 'Transplant at 20cm row & 15cm hill spacing' }
+      ]
+    },
+    tillering: {
+      id: 'tillering',
+      nameBn: '৪. কুশি গজানো পর্যায় (Tillering Stage)',
+      nameEn: '4. Tillering Stage',
+      stepNumber: 4,
+      durationBn: 'রোপণের ২৫-৪৫তম দিন • শিকড় ও সক্রিয় কুশি বিস্তার কাল',
+      durationEn: 'Days 25-45 after transplanting • Root expansion',
+      badgeBn: 'চলতি সক্রিয় পর্যায়',
+      badgeEn: 'Active Current Stage',
+      waterReqBn: 'জমিতে ২-৩ সেমি পাতলা পানি বজায় রাখুন। AWD নিয়মে নালা পর্যবেক্ষণ করুন।',
+      waterReqEn: 'Maintain 2-3 cm shallow water level using Alternate Wetting & Drying.',
+      fertilizerBn: '১ম কিস্তি ইউরিয়া সার প্রয়োগ (৭ কেজি/বিঘা) এবং ৩ কেজি এমওপি সার উপরিপ্রয়োগ।',
+      fertilizerEn: 'Top dress 7 kg Urea and 3 kg MOP per bigha during active tillering.',
+      pestRiskBn: 'মাজরা পোকা ও পাতা ব্লাস্ট রোগ। সন্ধ্যায় আলোক ফাঁদ স্থাপন করুন।',
+      pestRiskEn: 'Stem borer & Leaf Blast. Deploy evening light traps in the field.',
+      nextStageBn: 'ফুল ও শীষ আসা পর্যায় (Flowering) — আনুমানিক ১২-১৫ দিন পর।',
+      nextStageEn: 'Flowering Stage — Expected in ~12-15 days.',
+      checklist: [
+        { textBn: 'নিড়ানি দিয়ে ক্ষেতের আগাছা পরিষ্কার করা যাতে আলোবাতাস পৌঁছায়', textEn: 'Hand weeding around tillers for proper aeration' },
+        { textBn: 'সেচ নালা পরীক্ষা ও ২-৩ ইঞ্চি পানি লেভেল নিশ্চিতকরণ', textEn: 'Verify irrigation channels and maintain 2-3 inch water' },
+        { textBn: 'ইউরিয়া সারের প্রথম কিস্তি প্রয়োগের পর হালকা সেচ প্রদান', textEn: 'Apply 1st top dressing Urea followed by light watering' },
+        { textBn: 'পাতার ডগায় মাজরা পোকার ডিম ও ব্লাস্ট রোগের দাগ পর্যবেক্ষণ', textEn: 'Scout leaf tips for stem borer egg masses & blast lesions' }
+      ]
+    },
+    flowering: {
+      id: 'flowering',
+      nameBn: '৫. ফুল ও শীষ আসা পর্যায় (Flowering & Heading)',
+      nameEn: '5. Flowering & Heading Stage',
+      stepNumber: 5,
+      durationBn: '৪৬-৭৫ দিন • থোর ও শীষ বের হওয়ার সর্বোচ্চ সংবেদনশীল কাল',
+      durationEn: 'Days 46-75 • Heading, anthesis & maximum water dependency',
+      badgeBn: 'সর্বোচ্চ সেচ চাহিদা',
+      badgeEn: 'Critical Water Peak',
+      waterReqBn: 'সর্বোচ্চ পানির চাহিদা (জমিতে সবসময় ৩-৫ সেমি পানি থাকা আবশ্যক, কখনোই শুকানো যাবে না)।',
+      waterReqEn: 'Critical water peak: maintain 3-5 cm standing water without drying.',
+      fertilizerBn: '২য় কিস্তি পটাশ (এমওপি) ও বোরন স্প্রে করুন। ফুল ফোটার মধ্যাহ্নে কোনো সার/কীটনাশক ছিটাবেন না।',
+      fertilizerEn: 'Foliar spray MOP & Solubor Boron. Avoid spraying during peak noon anthesis.',
+      pestRiskBn: 'শীষ ব্লাস্ট (Neck Blast), গান্ধী পোকা ও বাদামী গাছফড়িং (BPH)।',
+      pestRiskEn: 'Neck Blast, Rice Bug (Gandhi bug), and Brown Plant Hopper (BPH).',
+      nextStageBn: 'দানা পরিপক্কতা পর্যায় (Maturity) — আনুমানিক ২০-২৫ দিন পর।',
+      nextStageEn: 'Grain Filling & Maturity — Expected in ~20-25 days.',
+      checklist: [
+        { textBn: 'পানিশূন্যতা যাতে না ঘটে সেজন্য সার্বক্ষণিক সেচ পাম্প প্রস্তুত রাখা', textEn: 'Keep pumps ready to prevent drought shock at anthesis' },
+        { textBn: 'ক্ষেতে বাঁশের কঞ্চি পুতে গান্ধী পোকা তাড়াতে আলোর ফাঁদ ব্যবহার', textEn: 'Deploy bamboo perches and light traps for insect scouts' },
+        { textBn: 'শীষ ব্লাস্ট প্রতিরোধে ট্রাইসাইক্লাজল জাতীয় ওষুধ পূর্বপ্রতিরোধক স্প্রে', textEn: 'Preventative Tricyclazole spray against neck blast' }
+      ]
+    },
+    maturity: {
+      id: 'maturity',
+      nameBn: '৬. দানা পরিপক্কতা পর্যায় (Maturity Stage)',
+      nameEn: '6. Grain Filling & Ripening Stage',
+      stepNumber: 6,
+      durationBn: '৭৬-১০৫ দিন • দুধ পর্যায় থেকে সোনালী শক্ত দানায় রূপান্তর',
+      durationEn: 'Days 76-105 • Milk to dough to golden hard grain',
+      badgeBn: 'পানি শুকানো কাল',
+      badgeEn: 'Pre-Harvest Drain',
+      waterReqBn: 'ফসল কাটার ১০-১২ দিন পূর্বে ক্ষেতের সমস্ত পানি নিষ্কাশন করে জমি শুকাতে দিন।',
+      waterReqEn: 'Drain all standing water 10-12 days prior to harvest to firm soil.',
+      fertilizerBn: 'এখন কোনো ধরনের সার বা কীটনাশক প্রয়োগ সম্পূর্ণ নিষিদ্ধ।',
+      fertilizerEn: 'Chemical fertilizers and pesticides strictly forbidden at ripening.',
+      pestRiskBn: 'ইঁদুরের আক্রমণ ও দেরিতে ছত্রাকের দাগ।',
+      pestRiskEn: 'Rodent damage and sooty mold on lodging plants.',
+      nextStageBn: 'ফসল কাটা পর্যায় (Harvest) — আনুমানিক ৭-১০ দিন পর।',
+      nextStageEn: 'Harvest Stage — Expected in ~7-10 days.',
+      checklist: [
+        { textBn: 'ক্ষেতের অতিরিক্ত পানি নালা কেটে দ্রুত বের করে দেওয়া', textEn: 'Open drainage channels to drain residual paddy water' },
+        { textBn: 'ইঁদুর দমনে জিঙ্ক ফসফাইড বিষটোপ বা ফাঁদ ব্যবহার', textEn: 'Deploy rodent traps and bait stations around bunds' },
+        { textBn: 'দানার শতকরা ৮০ ভাগ সোনালী রঙ ধারণ করেছে কিনা পরীক্ষা', textEn: 'Check that 80%+ grains have turned golden straw color' }
+      ]
+    },
+    harvest: {
+      id: 'harvest',
+      nameBn: '৭. ফসল কাটা ও মাড়াই পর্যায় (Harvest Stage)',
+      nameEn: '7. Harvest & Post-Harvest Stage',
+      stepNumber: 7,
+      durationBn: '১০৬-১১৫ দিন • ফসল সংগ্রহ, মাড়াই, শুকানো ও গুদামজাতকরণ',
+      durationEn: 'Days 106-115 • Reaping, threshing, drying & storage',
+      badgeBn: 'ফসল ঘরে তোলা',
+      badgeEn: 'Reaping & Selling',
+      waterReqBn: 'জমি সম্পূর্ণ শুষ্ক থাকবে। শুকনো দিনে রোদ দেখে ফসল কাটুন।',
+      waterReqEn: 'Dry field conditions. Harvest on bright sunny forecast days.',
+      fertilizerBn: 'কোনো সার নেই। সংরক্ষণ পাত্রে নিমপাতা বা শুকনো ছাই ব্যবহার করুন।',
+      fertilizerEn: 'No fertilizer. Use neem leaves in storage silos to repel weevils.',
+      pestRiskBn: 'বৃষ্টিজনিত ভেজা দানার ছাতা পড়া ও গুদামজাত পোকা (Weevil)।',
+      pestRiskEn: 'Aflatoxin mold from rain dampness and grain weevils.',
+      nextStageBn: 'পরবর্তী রবি ফসল (আলু/সরিষা) রোপণ প্রস্তুতি।',
+      nextStageEn: 'Next Rabi crop (Potato/Mustard) land preparation.',
+      checklist: [
+        { textBn: 'সকালে শিশির শুকানোর পর কম্বাইন হারভেস্টার বা কাঁচি দিয়ে কাটা', textEn: 'Reap after morning dew evaporates using harvester or sickles' },
+        { textBn: 'খোলা রোদে ২-৩ দিন শুকিয়ে আর্দ্রতা ১২% বা তার নিচে নামানো', textEn: 'Sun dry paddy for 2-3 days to reach 12% storage moisture' },
+        { textBn: 'কৃষিবাজার ডিজিটাল মার্কেটপ্লেসে পাইকারি বিক্রির লিস্টিং পোস্ট করা', textEn: 'Publish produce on KrishiBazar Wholesale Marketplace' }
+      ]
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAF8] pb-28 max-w-md mx-auto px-4 pt-4 space-y-4">
@@ -161,7 +416,9 @@ export const AIFarmIntelligenceCenter: React.FC = () => {
 
           <div>
             <span className="text-[9px] text-emerald-200 block">{isBn ? 'আবহাওয়া' : 'Weather'}</span>
-            <span className="text-[10px] font-bold text-white block">৩৪° সে • মেঘলা</span>
+            <span className="text-[10px] font-bold text-white block truncate">
+              {weatherDisplayString}
+            </span>
           </div>
 
           <div>
@@ -173,16 +430,32 @@ export const AIFarmIntelligenceCenter: React.FC = () => {
           </div>
         </div>
 
-        {/* Action button to open AI Seasonal Planner */}
-        <Link
-          to={`/seasonal-planner/${farm.id}`}
-          className="w-full bg-[#F9A825] hover:bg-yellow-500 text-gray-900 font-extrabold py-2.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-xs active:scale-98 transition-all"
-        >
-          <CalendarDays className="w-4 h-4" />
-          <span>{isBn ? 'এআই সিজনাল প্ল্যানার ও টাইমলাইন দেখুন' : 'View AI Seasonal Farming Roadmap'}</span>
-          <ChevronRight className="w-4 h-4" />
-        </Link>
+        {/* Action buttons to open AI Seasonal Planner and IoT Farm Monitoring */}
+        <div className="grid grid-cols-2 gap-2">
+          <Link
+            to={`/seasonal-planner/${farm.id}`}
+            className="bg-[#F9A825] hover:bg-yellow-500 text-gray-900 font-extrabold py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-1.5 text-xs active:scale-98 transition-all"
+          >
+            <CalendarDays className="w-4 h-4" />
+            <span>{isBn ? 'সিজনাল প্ল্যানার' : 'Seasonal Roadmap'}</span>
+          </Link>
+          <Link
+            to={`/farm-monitoring/${farm.id}`}
+            className="bg-emerald-900 hover:bg-emerald-800 text-white font-extrabold py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-1.5 text-xs active:scale-98 transition-all border border-emerald-600/40"
+          >
+            <Radio className="w-4 h-4 text-[#F9A825] animate-pulse" />
+            <span>{isBn ? 'আইওটি মনিটরিং' : 'IoT Monitoring'}</span>
+          </Link>
+        </div>
       </div>
+
+      {/* AI DAILY FARM RECOMMENDATION */}
+      <AIDailyRecommendationCard
+        farm={farm}
+        crop={crop}
+        weather={weather}
+        compact={false}
+      />
 
       {/* AI ANALYSIS TABS BAR */}
       <div className="bg-white p-1.5 rounded-2xl border border-gray-100 shadow-xs flex gap-1.5 overflow-x-auto no-scrollbar text-xs">
@@ -710,133 +983,353 @@ export const AIFarmIntelligenceCenter: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 8: CROP CALENDAR */}
-      {activeTab === 'calendar' && (
-        <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-xs space-y-4 animate-in fade-in duration-200">
-          <div className="flex items-center justify-between border-b pb-2.5">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                <CalendarDays className="w-5 h-5" />
+      {/* TAB 8: CROP CALENDAR / LIFECYCLE */}
+      {activeTab === 'calendar' && (() => {
+        const activeStage = LIFECYCLE_STAGES_DATA[selectedLifecycleStage] || LIFECYCLE_STAGES_DATA.tillering;
+        const currentFieldStageId: LifecycleStageId = 'tillering';
+
+        return (
+          <div className="bg-white p-4.5 rounded-3xl border border-gray-100 shadow-xs space-y-4 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between border-b pb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                  <CalendarDays className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-gray-900">
+                    {isBn ? 'ফসল জীবনচক্র ট্র্যাকার (Crop Lifecycle)' : 'Crop Lifecycle Stage Tracker'}
+                  </h3>
+                  <span className="text-[10px] text-gray-500">
+                    {isBn ? 'বীজ থেকে ফসল কাটা পর্যন্ত প্রতিটি পর্যায়ের গভীর বিশ্লেষণ' : 'Seed to Harvest Stage Progression'}
+                  </span>
+                </div>
               </div>
-              <div>
-                <h3 className="text-xs font-black text-gray-900">
-                  {isBn ? 'ফসল জীবনচক্র ও স্টেজ ট্র্যাকার' : 'Crop Lifecycle Tracker'}
-                </h3>
-                <span className="text-[10px] text-gray-500">
-                  {isBn ? 'বীজ থেকে বিক্রয় পর্যন্ত পর্যায়ক্রমিক বিবরণ' : 'From Seed Selection to Market Selling'}
+
+              <span className="bg-emerald-100 text-[#2E7D32] border border-emerald-200 text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-ping" />
+                <span>{isBn ? 'চলতি পর্যায়: কুশি গজানো' : 'Current: Tillering'}</span>
+              </span>
+            </div>
+
+            {/* Stepper Progression: Seed → Germination → Seedling → Tillering → Flowering → Maturity → Harvest */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[10px] text-gray-500 font-bold px-0.5">
+                <span>{isBn ? '৭টি ধারাবাহিক পর্যায় (ক্লিক করে বিস্তারিত দেখুন):' : '7 Lifecycle Stages (Click to inspect):'}</span>
+                <span>{isBn ? 'ধাপ ' + toBengaliNumber(activeStage.stepNumber) + ' / ৭' : `Stage ${activeStage.stepNumber} of 7`}</span>
+              </div>
+              <div className="overflow-x-auto pb-2 scrollbar-none">
+                <div className="flex items-center gap-1.5 min-w-[580px]">
+                  {[
+                    { stage: 'seed' as const, nameBn: '১. বীজ', nameEn: 'Seed', isPast: true },
+                    { stage: 'germination' as const, nameBn: '২. অঙ্কুরোদগম', nameEn: 'Germination', isPast: true },
+                    { stage: 'seedling' as const, nameBn: '৩. চারা বীজতলা', nameEn: 'Seedling', isPast: true },
+                    { stage: 'tillering' as const, nameBn: '৪. কুশি গজানো', nameEn: 'Tillering', isCurrentFieldStage: true },
+                    { stage: 'flowering' as const, nameBn: '৫. ফুল ও শীষ', nameEn: 'Flowering', isUpcoming: true },
+                    { stage: 'maturity' as const, nameBn: '৬. পরিপক্কতা', nameEn: 'Maturity', isUpcoming: true },
+                    { stage: 'harvest' as const, nameBn: '৭. ফসল কাটা', nameEn: 'Harvest', isUpcoming: true },
+                  ].map((step, sIdx) => {
+                    const isSelected = selectedLifecycleStage === step.stage;
+                    const isFieldCurrent = step.stage === currentFieldStageId;
+                    const isCompleted = step.isPast;
+
+                    return (
+                      <div key={sIdx} className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedLifecycleStage(step.stage)}
+                          className={`px-2.5 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-1 shrink-0 transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#2E7D32] text-white shadow-md ring-2 ring-emerald-400 scale-102'
+                              : isFieldCurrent
+                              ? 'bg-amber-100 text-amber-900 border border-amber-300 font-extrabold'
+                              : isCompleted
+                              ? 'bg-emerald-50 text-[#2E7D32] border border-emerald-200'
+                              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                          }`}
+                        >
+                          {isCompleted && !isSelected && <Check className="w-3 h-3 text-[#2E7D32]" />}
+                          {isFieldCurrent && !isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#F9A825] animate-ping" />}
+                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#F9A825]" />}
+                          <span>{isBn ? step.nameBn : step.nameEn}</span>
+                        </button>
+                        {sIdx < 6 && (
+                          <span className={`text-[10px] font-bold ${isCompleted ? 'text-emerald-500' : 'text-gray-300'}`}>
+                            →
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Selected Stage Deep-Dive Card */}
+            <div className="bg-gradient-to-br from-emerald-50 to-green-50/60 p-4 rounded-2xl border-2 border-emerald-300 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[#2E7D32] text-white flex items-center justify-center text-xs font-bold shadow-xs">
+                    {toBengaliNumber(activeStage.stepNumber)}
+                  </span>
+                  <div>
+                    <h4 className="text-xs font-black text-gray-900">
+                      {isBn ? activeStage.nameBn : activeStage.nameEn}
+                    </h4>
+                    <p className="text-[10px] text-gray-600 font-medium">
+                      {isBn ? activeStage.durationBn : activeStage.durationEn}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  {selectedLifecycleStage === currentFieldStageId ? (
+                    <span className="text-[10px] font-black bg-[#F9A825] text-gray-900 px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-900 animate-ping" />
+                      <span>{isBn ? 'চলতি সক্রিয় পর্যায়' : 'Field Active'}</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-black bg-white/80 text-gray-700 px-2 py-0.5 rounded-full border border-gray-200">
+                      {isBn ? activeStage.badgeBn : activeStage.badgeEn}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Stage Requirements Matrix */}
+              <div className="grid grid-cols-2 gap-2.5 text-xs pt-1">
+                <div className="p-2.5 bg-white rounded-xl border border-emerald-100 space-y-1 shadow-2xs">
+                  <span className="text-[10px] font-bold text-gray-500 flex items-center gap-1">
+                    <Droplets className="w-3 h-3 text-blue-500" />
+                    <span>{isBn ? 'পানির চাহিদা ও সেচ নির্দেশিকা:' : 'Water Requirement:'}</span>
+                  </span>
+                  <p className="text-gray-900 font-bold text-[11px] leading-tight">
+                    {isBn ? activeStage.waterReqBn : activeStage.waterReqEn}
+                  </p>
+                </div>
+
+                <div className="p-2.5 bg-white rounded-xl border border-emerald-100 space-y-1 shadow-2xs">
+                  <span className="text-[10px] font-bold text-gray-500 flex items-center gap-1">
+                    <Sprout className="w-3 h-3 text-emerald-600" />
+                    <span>{isBn ? 'সুপারিশকৃত সার প্রয়োগ:' : 'Fertilizer Recommendation:'}</span>
+                  </span>
+                  <p className="text-gray-900 font-bold text-[11px] leading-tight">
+                    {isBn ? activeStage.fertilizerBn : activeStage.fertilizerEn}
+                  </p>
+                </div>
+
+                <div className="p-2.5 bg-white rounded-xl border border-emerald-100 space-y-1 shadow-2xs">
+                  <span className="text-[10px] font-bold text-gray-500 flex items-center gap-1">
+                    <ShieldAlert className="w-3 h-3 text-amber-600" />
+                    <span>{isBn ? 'কীটপতঙ্গ ও বালাই ঝুঁকি:' : 'Disease & Pest Risk:'}</span>
+                  </span>
+                  <p className="text-amber-900 font-bold text-[11px] leading-tight">
+                    {isBn ? activeStage.pestRiskBn : activeStage.pestRiskEn}
+                  </p>
+                </div>
+
+                <div className="p-2.5 bg-white rounded-xl border border-emerald-100 space-y-1 shadow-2xs">
+                  <span className="text-[10px] font-bold text-gray-500 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-[#F9A825]" />
+                    <span>{isBn ? 'পরবর্তী সম্ভাব্য পর্যায়:' : 'Next Expected Stage:'}</span>
+                  </span>
+                  <p className="text-[#2E7D32] font-black text-[11px] leading-tight">
+                    {isBn ? activeStage.nextStageBn : activeStage.nextStageEn}
+                  </p>
+                </div>
+              </div>
+
+              {/* Current Stage Tasks Checklist */}
+              <div className="p-3 bg-white rounded-xl border border-emerald-100 space-y-2 shadow-2xs">
+                <span className="text-[10px] font-extrabold text-gray-700 uppercase tracking-wide block">
+                  {isBn ? 'এই পর্যায়ের আবশ্যিক পরিচর্যা কাজসমূহ (Checklist):' : 'Stage Action Checklist (Interactive):'}
+                </span>
+                <div className="space-y-1.5 text-xs">
+                  {activeStage.checklist.map((task, tIdx) => {
+                    const taskId = `${selectedLifecycleStage}-${tIdx}`;
+                    const isDone = !!completedTaskIds[taskId];
+
+                    return (
+                      <div
+                        key={tIdx}
+                        onClick={() => toggleStageTask(taskId)}
+                        className="flex items-center gap-2 cursor-pointer p-1 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <span
+                          className={`w-4 h-4 rounded-md flex items-center justify-center text-[10px] font-bold transition-all ${
+                            isDone ? 'bg-[#2E7D32] text-white shadow-2xs' : 'border border-gray-300 text-transparent'
+                          }`}
+                        >
+                          ✓
+                        </span>
+                        <span className={`text-[11px] ${isDone ? 'line-through text-gray-400' : 'text-gray-800 font-semibold'}`}>
+                          {isBn ? task.textBn : task.textEn}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* DYNAMIC AI FARM DAILY SUMMARY */}
+      {(() => {
+        const isHighPrecip = (weather?.precipitation ?? 0) > 1.0;
+        const isHighTemp = tempVal >= 33;
+        const isHighHumidity = (weather?.humidity ?? 78) > 75;
+
+        const importantAlertTextBn = isHighPrecip
+          ? 'আজ বৃষ্টিপাত পরিলক্ষিত হয়েছে। জমিতে সেচ দেওয়া স্থগিত রাখুন এবং অতিরিক্ত পানি বের করে দেওয়ার নালা উন্মুক্ত রাখুন।'
+          : isHighHumidity
+          ? 'বাতাসে উচ্চ আর্দ্রতা (' + toBengaliNumber(weather?.humidity ?? 78) + '%) থাকায় নাবি ধসা ও পাতা ব্লাস্ট রোগের ঝুঁকি বেশি। আজই এআই রোগ স্ক্যান করুন।'
+          : isHighTemp
+          ? 'আজকের তাপমাত্রা ' + toBengaliNumber(tempVal) + '° সে হওয়ায় মাটির আর্দ্রতা কমে যেতে পারে। বিকেলে জমিতে হালকা সেচ প্রদান করুন।'
+          : farm.healthScore < 85
+          ? 'খামারের সার্বিক স্বাস্থ্য সুরক্ষায় আগাছা পরিষ্কার করুন এবং আক্রান্ত অংশ আলাদা করুন।'
+          : 'কুশি গজানো পর্যায়ের স্বাস্থ্য সুরক্ষায় আগামী ৪৮ ঘণ্টার মধ্যে এআই রোগ স্ক্যান করুন এবং আগাছা পরিষ্কার রাখুন।';
+
+        const importantAlertTextEn = isHighPrecip
+          ? 'Rainfall recorded. Suspend irrigation today and ensure clear field drainage outlets.'
+          : isHighHumidity
+          ? 'High humidity (' + (weather?.humidity ?? 78) + '%) elevates late blight and blast vulnerability. Execute AI Leaf Disease Scan today.'
+          : isHighTemp
+          ? 'High temperature (' + tempVal + '°C) detected. Apply light irrigation in late afternoon to maintain soil cool.'
+          : farm.healthScore < 85
+          ? 'Weed active tillers and inspect spots to improve farm health score.'
+          : 'Execute AI Leaf Disease Scan within 48 hours and weed active tillers for maximum sunlight exposure.';
+
+        return (
+          <div className="bg-white p-4.5 rounded-3xl border-2 border-emerald-300 shadow-md space-y-3.5">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#2E7D32] text-white flex items-center justify-center shadow-xs">
+                  <Sparkles className="w-4.5 h-4.5 text-[#F9A825]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-gray-900">
+                    {isBn ? 'দৈনিক এআই খামার সামারি (AI Daily Farm Summary)' : 'AI Daily Farm Summary'}
+                  </h3>
+                  <p className="text-[10px] text-gray-500">
+                    {isBn
+                      ? `${farm.nameBn} • ওপেন-মেটিও লাইভ আবহাওয়া ও ফসল বিশ্লেষণ`
+                      : `${farm.nameEn} • Real-time Open-Meteo & Crop Telemetry`}
+                  </p>
+                </div>
+              </div>
+
+              <span className="text-[10px] font-black bg-emerald-100 text-[#2E7D32] px-2.5 py-0.5 rounded-full border border-emerald-200">
+                {isBn ? 'আজকের সার্বিক রিপোর্ট' : 'Today\'s Report'}
+              </span>
+            </div>
+
+            {/* 6 Dynamic Overview Cards */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {/* 1. Today's Weather */}
+              <div className="p-2.5 bg-gray-50/80 rounded-2xl border border-gray-100 space-y-0.5">
+                <span className="text-[10px] text-gray-500 font-bold block flex items-center gap-1">
+                  <CloudSun className="w-3 h-3 text-[#F9A825]" />
+                  <span>{isBn ? 'আজকের আবহাওয়া:' : 'Today\'s Weather:'}</span>
+                </span>
+                <span className="font-extrabold text-gray-900 block truncate">
+                  {toBengaliNumber(tempVal)}°সে • {weatherDesc}
+                </span>
+                <span className="text-[9px] text-gray-500 block truncate">
+                  {isBn
+                    ? `আর্দ্রতা ${toBengaliNumber(weather?.humidity ?? 78)}% • বৃষ্টি ${toBengaliNumber(weather?.precipitation ?? 0)} মিমি`
+                    : `Humidity ${weather?.humidity ?? 78}% • Rain ${weather?.precipitation ?? 0}mm`}
                 </span>
               </div>
-            </div>
 
-            <span className="bg-blue-100 text-blue-900 text-[10px] font-black px-2.5 py-0.5 rounded-full">
-              {isBn ? 'ধাপ ৩ / ৯' : 'Step 3 / 9'}
-            </span>
-          </div>
-
-          {/* Complete Lifecycle list */}
-          <div className="space-y-2 text-xs">
-            {[
-              { titleBn: '১. উন্নত বীজ নির্বাচন', titleEn: '1. Seed Selection', status: 'completed' },
-              { titleBn: '২. জমি চাষ ও প্রস্তুতি', titleEn: '2. Land Preparation', status: 'completed' },
-              { titleBn: '৩. রোপণ ও চারা স্থাপন', titleEn: '3. Planting', status: 'current' },
-              { titleBn: '৪. প্রথম সেচ ও বালাই পর্যবেক্ষণ', titleEn: '4. First Irrigation', status: 'upcoming' },
-              { titleBn: '৫. সারের উপরিপ্রয়োগ (ইউরিয়া/পটাশ)', titleEn: '5. Fertilizer Application', status: 'upcoming' },
-              { titleBn: '৬. পোকা ও রোগ নিয়ন্ত্রণ', titleEn: '6. Pest & Disease Control', status: 'upcoming' },
-              { titleBn: '৭. কুশি ও শীষ আসার মনিটরিং', titleEn: '7. Tillering & Flowering', status: 'upcoming' },
-              { titleBn: '৮. ফসল কাটা ও মাড়াই', titleEn: '8. Harvest & Threshing', status: 'upcoming' },
-              { titleBn: '৯. বাজারে বিক্রয় ও সংরক্ষণ', titleEn: '9. Market Selling', status: 'upcoming' },
-            ].map((step, idx) => (
-              <div
-                key={idx}
-                className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
-                  step.status === 'completed'
-                    ? 'bg-emerald-50/70 border-emerald-200 text-[#2E7D32]'
-                    : step.status === 'current'
-                    ? 'bg-amber-50 border-amber-300 ring-2 ring-amber-200 text-gray-900 font-extrabold'
-                    : 'bg-gray-50 border-gray-100 text-gray-500'
-                }`}
-              >
-                <span className="font-bold text-xs">{isBn ? step.titleBn : step.titleEn}</span>
-
-                {step.status === 'completed' && (
-                  <span className="text-[10px] font-extrabold bg-emerald-200 text-[#2E7D32] px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <Check className="w-3 h-3" />
-                    {isBn ? 'সম্পন্ন' : 'Done'}
-                  </span>
-                )}
-                {step.status === 'current' && (
-                  <span className="text-[10px] font-black bg-[#F9A825] text-gray-900 px-2.5 py-0.5 rounded-full animate-pulse">
-                    {isBn ? 'চলতি পর্যায়' : 'Current'}
-                  </span>
-                )}
-                {step.status === 'upcoming' && (
-                  <span className="text-[10px] font-semibold text-gray-400">
-                    {isBn ? 'আসন্ন' : 'Upcoming'}
-                  </span>
-                )}
+              {/* 2. Crop Health Status */}
+              <div className="p-2.5 bg-gray-50/80 rounded-2xl border border-gray-100 space-y-0.5">
+                <span className="text-[10px] text-gray-500 font-bold block flex items-center gap-1">
+                  <HeartPulse className="w-3 h-3 text-emerald-500" />
+                  <span>{isBn ? 'ফসল স্বাস্থ্য স্কোর:' : 'Crop Health Status:'}</span>
+                </span>
+                <span className="font-extrabold text-[#2E7D32] block">
+                  {toBengaliNumber(farm.healthScore)}% ({farm.healthScore > 90 ? (isBn ? 'উৎকৃষ্ট' : 'Healthy') : (isBn ? 'পর্যবেক্ষণ' : 'Monitor')})
+                </span>
+                <span className="text-[9px] text-gray-500 block truncate">
+                  {isBn ? crop.cropNameBn : crop.cropNameEn} • {isBn ? crop.stageBn : crop.stageEn}
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* AI SUMMARY BOX AT THE BOTTOM */}
-      <div className="bg-white p-4.5 rounded-3xl border-2 border-emerald-200 shadow-md space-y-3">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-2.5">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#2E7D32] text-white flex items-center justify-center">
-              <Sparkles className="w-4.5 h-4.5 text-[#F9A825]" />
+              {/* 3. Irrigation Recommendation */}
+              <div className="col-span-2 p-2.5 bg-blue-50/60 rounded-2xl border border-blue-200/60 space-y-0.5">
+                <span className="text-[10px] text-blue-900 font-extrabold flex items-center gap-1">
+                  <Droplets className="w-3 h-3 text-blue-600" />
+                  <span>{isBn ? 'সেচ ব্যবস্থাপনা পরামর্শ (Irrigation Recommendation):' : 'Irrigation Recommendation:'}</span>
+                </span>
+                <p className="text-[11px] text-blue-950 font-bold leading-snug">
+                  {isHighPrecip
+                    ? (isBn
+                        ? 'আজ বৃষ্টিপাত হওয়ায় জমিতে সেচ দেওয়া স্থগিত রাখুন। অতিরিক্ত পানি নিষ্কাশনের নালা খুলে দিন।'
+                        : 'Rainfall recorded/expected; suspend irrigation today and check drainage channels.')
+                    : isHighTemp
+                    ? (isBn
+                        ? 'উচ্চ তাপমাত্রা ও প্রখর রোদের কারণে সকাল বা বিকেলে জমিতে হালকা AWD সেচ দিয়ে মাটি ভিজিয়ে রাখুন।'
+                        : 'High heat today; apply light AWD watering early morning or late afternoon.')
+                    : (isBn
+                        ? 'মাটির আর্দ্রতা অনুকূল রয়েছে। আগামী ২ দিন পর নিয়মিত সেচসূচী অনুসরণ করুন।'
+                        : 'Soil moisture is optimal. Follow regular watering schedule in 2 days.')}
+                </p>
+              </div>
+
+              {/* 4. Fertilizer / Task Recommendation */}
+              <div className="col-span-2 p-2.5 bg-emerald-50/70 rounded-2xl border border-emerald-200 space-y-0.5">
+                <span className="text-[10px] text-emerald-900 font-extrabold flex items-center gap-1">
+                  <Sprout className="w-3 h-3 text-[#2E7D32]" />
+                  <span>{isBn ? 'সার ও পরিচর্যা সুপারিশ (Fertilizer / Tasks):' : 'Fertilizer & Task Recommendation:'}</span>
+                </span>
+                <p className="text-[11px] text-emerald-950 font-bold leading-snug">
+                  {(weather?.precipitation ?? 0) > 2.0
+                    ? (isBn
+                        ? 'বৃষ্টি শেষ না হওয়া পর্যন্ত ইউরিয়া সার প্রয়োগ বন্ধ রাখুন যাতে সার ধুয়ে না যায়।'
+                        : 'Halt top-dressing Urea until rainfall clears to prevent chemical runoff.')
+                    : (isBn
+                        ? 'কুশি বৃদ্ধির এই গুরুত্বপূর্ণ সময়ে বিঘা প্রতি ৭ কেজি ইউরিয়া ও ৩ কেজি এমওপি সার উপরিপ্রয়োগ করুন।'
+                        : 'Apply 7kg Urea and 3kg MOP per bigha to accelerate tiller shoot density.')}
+                </p>
+              </div>
+
+              {/* 5. Disease & Pest Risk */}
+              <div className="col-span-2 p-2.5 bg-amber-50/70 rounded-2xl border border-amber-200 space-y-0.5">
+                <span className="text-[10px] text-amber-900 font-extrabold flex items-center gap-1">
+                  <ShieldAlert className="w-3 h-3 text-amber-600" />
+                  <span>{isBn ? 'রোগ ও বালাই ঝুঁকি স্তর (Disease / Pest Risk):' : 'Disease / Pest Risk Level:'}</span>
+                </span>
+                <p className="text-[11px] text-amber-950 font-bold leading-snug">
+                  {isHighHumidity
+                    ? (isBn
+                        ? 'বাতাসে উচ্চ আর্দ্রতা (' + toBengaliNumber(weather?.humidity ?? 78) + '%) থাকায় আলুর নাবি ধসা ও ধানের পাতা ব্লাস্ট রোগের ঝুঁকি বেশি। পাতা পর্যবেক্ষণ করুন।'
+                        : 'High humidity (' + (weather?.humidity ?? 78) + '%) elevates late blight and blast vulnerability. Inspect leaf tips.')
+                    : (isBn
+                        ? 'বর্তমান আবহাওয়া কীটপতঙ্গের জন্য কম ঝুঁকিপূর্ণ। স্বাভাবিক জৈব বালাই নিয়ন্ত্রণ বজায় রাখুন।'
+                        : 'Mild weather; pest pressure is low and normal biological control is sufficient.')}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-black text-gray-900">
-                {isBn ? 'এআই খামার সামারি (AI Farm Summary)' : 'AI Overall Farm Summary'}
-              </h3>
-              <p className="text-[10px] text-gray-500">
-                {isBn ? 'আজকের দিনে আপনার খামারের সার্বিক অবস্থা' : 'Daily holistic farm status report'}
+
+            {/* 6. Important Alert Banner */}
+            <div className="p-3 bg-gradient-to-r from-[#2E7D32] to-[#388E3C] text-white rounded-2xl shadow-xs space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-100">
+                  <Zap className="w-4 h-4 text-[#F9A825]" />
+                  <span>{isBn ? 'আজকের জরুরি নির্দেশনা (Important Alert):' : 'Important Farm Alert:'}</span>
+                </div>
+                <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-black text-yellow-300">
+                  {isBn ? 'জরুরি পদক্ষেপ' : 'Priority'}
+                </span>
+              </div>
+              <p className="text-xs font-extrabold text-white leading-snug">
+                {isBn ? importantAlertTextBn : importantAlertTextEn}
               </p>
             </div>
           </div>
-        </div>
-
-        {/* 6 Key Overview Pills */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="p-2.5 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-            <span className="text-[10px] text-gray-500 font-bold">{isBn ? 'খামারের স্বাস্থ্য:' : 'Farm Health:'}</span>
-            <span className="font-extrabold text-[#2E7D32]">৯২% ({isBn ? 'উৎকৃষ্ট' : 'Good'})</span>
-          </div>
-
-          <div className="p-2.5 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-            <span className="text-[10px] text-gray-500 font-bold">{isBn ? 'প্রত্যাশিত লাভ:' : 'Expected Profit:'}</span>
-            <span className="font-extrabold text-[#2E7D32]">৳ ৫২,০০০</span>
-          </div>
-
-          <div className="p-2.5 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-            <span className="text-[10px] text-gray-500 font-bold">{isBn ? 'ঝুঁকির মাত্রা:' : 'Risk Level:'}</span>
-            <span className="font-extrabold text-emerald-700">{isBn ? 'কম (Low)' : 'Low'}</span>
-          </div>
-
-          <div className="p-2.5 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-            <span className="text-[10px] text-gray-500 font-bold">{isBn ? 'পানির অবস্থা:' : 'Water Status:'}</span>
-            <span className="font-extrabold text-blue-700">{isBn ? 'ভালো (Good)' : 'Good'}</span>
-          </div>
-
-          <div className="col-span-2 p-2.5 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-            <span className="text-[10px] text-gray-500 font-bold">{isBn ? 'বাজার দৃষ্টিভঙ্গি:' : 'Market Outlook:'}</span>
-            <span className="font-extrabold text-emerald-800">{isBn ? 'উচ্চ চাহিদা (High Demand)' : 'High Demand'}</span>
-          </div>
-        </div>
-
-        {/* Recommended Action Today */}
-        <div className="p-3 bg-gradient-to-r from-[#2E7D32] to-[#388E3C] text-white rounded-2xl shadow-xs space-y-1">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-100">
-            <Zap className="w-4 h-4 text-[#F9A825]" />
-            <span>{isBn ? 'আজকের প্রধান প্রয়োজনীয় পদক্ষেপ (Action Today):' : 'Recommended Action Today:'}</span>
-          </div>
-          <p className="text-xs font-extrabold text-white">
-            {isBn ? 'নাইট্রোজেন সার (ইউরিয়া) প্রয়োগ করুন ও বিকেলের সেচ হালকা রাখুন।' : 'Apply Nitrogen Fertilizer (Urea) & keep afternoon irrigation light.'}
-          </p>
-        </div>
-      </div>
+        );
+      })()}
     </div>
   );
 };

@@ -20,6 +20,9 @@ import {
 import { InteractiveFarmMap } from '../components/farm/InteractiveFarmMap';
 import { NearbyFarmInfo } from '../components/farm/NearbyFarmBottomSheet';
 import { AICropRecommendationCard, FarmRegistrationData } from '../components/farm/AICropRecommendationCard';
+import { INITIAL_FARMS } from '../data/mockData';
+import { resolveFarmCoordinates } from '../services/weatherService';
+import { Farm } from '../types';
 
 export const AddFarmPage: React.FC = () => {
   const { language, t } = useLanguage();
@@ -124,7 +127,23 @@ export const AddFarmPage: React.FC = () => {
   };
 
   const handleSaveFarmToSystem = () => {
-    alert(isBn ? 'আপনার নতুন খামার সফলভাবে নিবন্ধিত ও এআই ট্র্যাক করা হয়েছে!' : 'New Farm successfully registered & AI tracked!');
+    const coords = resolveFarmCoordinates(null, formData.district);
+    const newFarm: Farm = {
+      id: `f${INITIAL_FARMS.length + 1}`,
+      nameBn: formData.farmName || (isBn ? 'নতুন স্মার্ট খামার' : 'New Smart Farm'),
+      nameEn: formData.farmName || 'New Smart Farm',
+      district: formData.district,
+      upazila: formData.upazila,
+      areaDecimal: parseFloat(formData.landSize) || 50,
+      soilTypeBn: formData.soilType,
+      soilTypeEn: formData.soilType,
+      cropsCount: 1,
+      healthScore: 92,
+      imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80',
+      latitude: coords.lat,
+      longitude: coords.lng
+    };
+    INITIAL_FARMS.push(newFarm);
     navigate('/my-farm');
   };
 
