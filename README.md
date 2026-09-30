@@ -139,7 +139,7 @@ The available screens and behavior depend on the current implementation. AI-gene
 
 Add the files below to the repository if they are part of your submission. The links will work after the files exist at these exact paths.
 
-- [Testing Report (PDF)](docs/KrishiBazar_Testing_Report.pdf)
+- [Testing Report (PDF)](https://github.com/Faujull/KrishiBazar/blob/main/docs/KrishiBazar_Final_Showcase.pptx)
 - [Editable Presentation (PPTX)](docs/KrishiBazar_Final_Showcase.pptx)
 
 The testing report should record the tests actually performed, results, screenshots/evidence, API and fallback behavior, browser checks, and known limitations. Do not mark a test as passed unless it was performed.
