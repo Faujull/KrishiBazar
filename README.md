@@ -145,19 +145,6 @@ Add the files below to the repository if they are part of your submission. The l
 
 The testing report should record the tests actually performed, results, screenshots/evidence, API and fallback behavior, browser checks, and known limitations. Do not mark a test as passed unless it was performed.
 
-## Screenshots
-
-Add screenshots to `assets/screenshots/` and update the image paths below. For example:
-
-```markdown
-![Farmer Dashboard](assets/screenshots/dashboard.png)
-![AI Farm Intelligence Center](assets/screenshots/ai-intelligence.png)
-![Farm Registration](assets/screenshots/add-farm.png)
-![Disease Detection](assets/screenshots/disease-detection.png)
-![Seasonal Planner](assets/screenshots/seasonal-planner.png)
-![Farm Monitoring](assets/screenshots/farm-monitoring.png)
-![Marketplace](assets/screenshots/marketplace.png)
-```
 
 ## Limitations and Future Work
 
