@@ -1,36 +1,180 @@
-# KrishiBazar
+# KrishiBazar 🌾
 
-KrishiBazar is a Bangladesh-focused smart agriculture web platform designed to assist farmers throughout the cultivation lifecycle. By unifying real-time agro-meteorology, AI-driven farm recommendations, crop planning, simulated field telemetry, leaf disease screening, and a wholesale produce marketplace into a single bilingual interface (বাংলা and English), the application solves the problem of fragmented tools and information for local farming communities.
+**KrishiBazar** is an AI-assisted smart agriculture web application designed to help farmers make informed farming decisions using crop recommendations, weather information, disease analysis, farm planning, and marketplace features.
 
-## 🌾 Key Features
+> **Project status:** Farmer-side frontend with API integrations. The other stakeholder portals and a full production backend/database are not implemented. Farm-monitoring sensor readings are simulated; no physical IoT device is connected.
 
-- **Farmer Dashboard**: Real-time localized weather widget, urgent hazard alerts, daily AI recommendations, active crop health tracking, and regional wholesale market prices.
-- **5-Step Farm Registration**: Streamlined onboarding capturing soil classification, irrigation methods, water sources, and an interactive 4-direction neighbor boundary map.
-- **Daily AI Farm Advisory**: Context-aware daily farm guidance that blends live Open-Meteo weather with individual crop growth stages, soil types, and priority field checklists.
-- **AI Crop Intelligence Center**: 8 specialized decision-support modules covering crop diseases, pest threats, NPK fertilizer plans, smart AWD irrigation, yield forecasting, production cost/profit analysis, market trends, and lifecycle management.
-- **Crop Lifecycle Tracker**: Interactive task management across 7 phenological stages, from seed treatment to post-harvest storage.
-- **Seasonal Farming Planner**: 16-week timeline with scheduled tasks, input requirements, budget estimates, and a printable farm advisory blueprint.
-- **Leaf Disease Detection**: Photo upload or mobile camera capture for leaf disease screening, complete with organic/chemical remedies and spoken audio readouts.
-- **Farmer Marketplace & Orders**: Direct wholesale produce listings, price-per-kg management, and order fulfillment tracking (*Processing* ➔ *Shipped* ➔ *Delivered*).
-- **Contextual Notifications**: Categorized alerts for heavy rainfall, AWD irrigation windows, disease risks, and wholesale buyer orders.
-- **Bilingual Interface**: Seamless one-tap language switching between Bengali (বাংলা) and English with local storage persistence.
+## Contents
 
-## 🧠 Smart Agriculture
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Requirements](#requirements)
+- [Install on Windows](#install-on-windows)
+- [Install on Linux](#install-on-linux)
+- [Configure Gemini API](#configure-gemini-api)
+- [Run the Application](#run-the-application)
+- [User Manual](#user-manual)
+- [Testing and Documentation](#testing-and-documentation)
+- [Screenshots](#screenshots)
+- [Limitations and Future Work](#limitations-and-future-work)
+- [Team](#team)
+- [Project Links](#project-links)
 
-KrishiBazar integrates agricultural intelligence at multiple levels:
-- **Daily Farm Recommendations**: Powered by a server-side Google Gemini (`gemini-3.8-flash`) integration that processes farm characteristics, crop stage, and actual Open-Meteo weather data to produce structured, actionable field advice.
-- **Leaf Disease Analysis**: Server-side image processing providing diagnostic severity ratings, symptom lists, and cautious organic and chemical treatment advice.
-- **Resilient Fallback Engine**: If an API key is absent or network access fails, deterministic agronomic rule-based engines automatically supply reliable advisories so the UI never breaks.
+## Features
 
-## 🌦️ Weather & Monitoring
+- **Farmer Dashboard:** Overview of farm information, weather, and farming activities.
+- **Smart Farm Registration:** Step-by-step farm setup and AI-assisted crop recommendations.
+- **AI Farm Intelligence Center:** Crop-related guidance for disease, pests, fertilizer, irrigation, yield, costs/profit, market information, and crop lifecycle.
+- **AI Daily Advisory:** Farming suggestions informed by farm context and weather data.
+- **Leaf Disease Analysis:** Image-based crop disease analysis using the configured Gemini API.
+- **Seasonal Farming Planner:** Crop timeline and recommended farming activities.
+- **Farm Monitoring Prototype:** Displays simulated sensor readings alongside weather information.
+- **Marketplace and Orders:** Farmer produce listings and order-related screens.
+- **Notifications:** Farming and marketplace updates.
+- **Bangla and English:** Bilingual interface.
 
-- **Open-Meteo Integration**: Fetches real-time temperature, humidity, precipitation, wind speed, and 7-day daily forecasts without inventing meteorological measurements. Includes built-in coordinate resolution for major Bangladesh districts and in-memory caching.
-- **Prototype IoT Telemetry**: Displays ambient temperature, soil moisture, humidity, rainfall, soil pH, and NPK macronutrient levels alongside fire/smoke and perimeter security sensors. *Note: Current IoT sensor telemetry is simulated for prototype demonstration and structured for future physical hardware integration.*
+## Technology Stack
 
-## 🛠️ Tech Stack
+- React, TypeScript, React Router, Tailwind CSS
+- Express server for Gemini API requests
+- Google Gemini API for AI-assisted features
+- Open-Meteo API for weather data
+- Vite and npm for development
 
-- **Frontend**: React 19, TypeScript, React Router 7, Tailwind CSS 4, Lucide React
-- **Backend / Server**: Express 4, tsx (Node.js runtime)
-- **AI & Data APIs**: `@google/genai` (Gemini 3.8 Flash), Open-Meteo Weather API
-- **Tooling & Build**: Vite 6, esbuild
+## Requirements
 
+Install the following before running the project:
+
+- **Node.js:** 20.x or later
+- **npm:** Included with Node.js
+- **Git:** Current stable version
+- A modern web browser, such as Chrome, Firefox, or Edge
+
+No separate database installation is required for the current version.
+
+## Install on Windows
+
+1. Install Node.js from [nodejs.org](https://nodejs.org/) and Git from [git-scm.com](https://git-scm.com/).
+2. Open PowerShell.
+3. Clone the repository:
+
+   ```powershell
+   git clone https://github.com/Faujull/KrishiBazar.git
+   cd KrishiBazar
+   ```
+
+4. Install project dependencies:
+
+   ```powershell
+   npm install
+   ```
+
+5. Complete the [Gemini API configuration](#configure-gemini-api).
+6. Start the application using the command documented in [Run the Application](#run-the-application).
+
+## Install on Linux
+
+1. Install Node.js 20.x or later, npm, and Git using your distribution's package manager or the official [Node.js website](https://nodejs.org/).
+2. Open a terminal.
+3. Clone the repository:
+
+   ```bash
+   git clone https://github.com/Faujull/KrishiBazar.git
+   cd KrishiBazar
+   ```
+
+4. Install project dependencies:
+
+   ```bash
+   npm install
+   ```
+
+5. Complete the [Gemini API configuration](#configure-gemini-api).
+6. Start the application using the command documented in [Run the Application](#run-the-application).
+
+## Configure Gemini API
+
+Some AI features require a Gemini API key.
+
+1. Obtain an API key from [Google AI Studio](https://aistudio.google.com/).
+2. Check the project's server configuration to confirm the expected environment-variable name.
+3. Create the required `.env` file in the location expected by the server and add your key, for example:
+
+   ```env
+   GEMINI_API_KEY=your_api_key_here
+   ```
+
+4. Keep `.env` private. **Never commit your real API key to GitHub.** If the project uses a different variable name or `.env` location, follow the names used in the source code.
+5. If the key is missing or the API request fails, AI features may use the application's fallback behavior.
+
+## Run the Application
+
+From the project directory, use the development script defined in `package.json`. In a typical Vite setup, this is:
+
+```bash
+npm run dev
+```
+
+If the project starts successfully, Vite will print a local URL in the terminal, commonly `http://localhost:5173`. Open the exact URL printed by your terminal.
+
+If the command is unavailable, check the `scripts` section in `package.json` and use the configured development command. The project may require its Express server to be started separately depending on the scripts provided.
+
+## User Manual
+
+1. **Open the application** using the local URL shown in the terminal.
+2. **Register or log in** through the authentication screen.
+3. **Set up a farm** from Add Farm. Enter the requested farm, location, soil, drainage, and other details.
+4. **Review crop recommendations** and the reasons, risks, and farming information shown for your farm.
+5. **Open the Dashboard** to review farm information and available weather updates.
+6. **Open AI Farm Intelligence** for crop-related advisory modules and daily recommendations.
+7. **Use Disease Detection** to submit a suitable crop-leaf image for AI-assisted analysis.
+8. **Open Seasonal Planner** to review the crop schedule and suggested activities.
+9. **Open Farm Monitoring** to explore the monitoring dashboard. Its sensor values are simulated and should not be treated as real measurements.
+10. **Explore Marketplace and Orders** to view the available produce-listing and order interfaces.
+11. **Change the language** using the language control to switch between Bangla and English, where available.
+
+The available screens and behavior depend on the current implementation. AI-generated advice is informational and should be checked against local agricultural expertise before taking action.
+
+## Testing and Documentation
+
+Add the files below to the repository if they are part of your submission. The links will work after the files exist at these exact paths.
+
+- [Testing Report (PDF)](docs/KrishiBazar_Testing_Report.pdf)
+- [Final Showcase Presentation (PDF)](docs/KrishiBazar_Final_Showcase.pdf)
+- [Editable Presentation (PPTX)](docs/KrishiBazar_Final_Showcase.pptx)
+
+The testing report should record the tests actually performed, results, screenshots/evidence, API and fallback behavior, browser checks, and known limitations. Do not mark a test as passed unless it was performed.
+
+## Screenshots
+
+Add screenshots to `assets/screenshots/` and update the image paths below. For example:
+
+```markdown
+![Farmer Dashboard](assets/screenshots/dashboard.png)
+![AI Farm Intelligence Center](assets/screenshots/ai-intelligence.png)
+![Farm Registration](assets/screenshots/add-farm.png)
+![Disease Detection](assets/screenshots/disease-detection.png)
+![Seasonal Planner](assets/screenshots/seasonal-planner.png)
+![Farm Monitoring](assets/screenshots/farm-monitoring.png)
+![Marketplace](assets/screenshots/marketplace.png)
+```
+
+## Limitations and Future Work
+
+- The current submission focuses on farmer-facing functionality; the other planned stakeholder portals remain future work.
+- A complete production backend and persistent database are not implemented.
+- Farm-monitoring telemetry is simulated; physical IoT sensors and device connectivity are future work.
+- Deployment to a public live website is not currently provided in this README.
+- Future work may include the remaining stakeholder portals, a full backend/database, real IoT integration, and production deployment.
+
+## Team
+
+- Muhammad Faujul Kabir
+- Md. Rakib Hasan
+- Md. Mahmud Hossain
+- Rohan
+
+## Project Links
+
+- **GitHub Repository:** https://github.com/Faujull/KrishiBazar
+- **Live Website:** Not currently deployed. Follow the installation instructions above to run the project locally.
