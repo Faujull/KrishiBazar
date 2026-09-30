@@ -135,14 +135,16 @@ If the command is unavailable, check the `scripts` section in `package.json` and
 
 The available screens and behavior depend on the current implementation. AI-generated advice is informational and should be checked against local agricultural expertise before taking action.
 
-## Testing and Documentation
+## 📚 Project Documents
 
-Add the files below to the repository if they are part of your submission. The links will work after the files exist at these exact paths.
+The following documents are included with the project submission:
 
-- [Testing Report (PDF)](https://github.com/Faujull/KrishiBazar/blob/main/docs/KrishiBazar_Testing_Report.docx)
-- [Editable Presentation (PPTX)](https://github.com/Faujull/KrishiBazar/blob/main/docs/KrishiBazar_Final_Showcase.pptx)
+- [Testing Report](./docs/KrishiBazar_Testing_Report.docx)
+- [Final Project Showcase Presentation](./docs/KrishiBazar_Final_Showcase.pptx)
 
-The testing report should record the tests actually performed, results, screenshots/evidence, API and fallback behavior, browser checks, and known limitations. Do not mark a test as passed unless it was performed.
+The Testing Report contains the testing scope, test cases, results, API and fallback testing, build verification, screenshots/evidence, and known project limitations.
+
+The Final Project Showcase Presentation summarizes the project, implemented features, project timeline, testing, challenges, lessons learned, and future scope.
 
 
 ## Limitations and Future Work
